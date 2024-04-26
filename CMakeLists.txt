@@ -73,7 +73,7 @@ target_sources(
         ${tolcat_sources}
 )
 
-target_compile_definitions(TolCat PRIVATE TOLCAT_EXPORT)
+target_compile_definitions(TolCat PRIVATE TOLCAT_EXPORT) # should only defined for this target
 
 # Preloader
 add_library(Preloader SHARED)
@@ -85,7 +85,7 @@ target_include_directories(
         Preloader PRIVATE "${CMAKE_SOURCE_DIR}/Preloader/include"
 )
 
-RECURSE_FILES(preloader_sources "${CMAKE_SOURCE_DIR}/TolCat/src/*.cpp")
+RECURSE_FILES(preloader_sources "${CMAKE_SOURCE_DIR}/Preloader/src/*.cpp")
 target_sources(
         Preloader
         PRIVATE
@@ -104,6 +104,7 @@ if (WIN32)
             Proxy
             PRIVATE
             ${proxy_sources}
+            "${CMAKE_SOURCE_DIR}/Proxy/version.def"
     )
 
     target_link_options(Proxy PRIVATE "-static")
