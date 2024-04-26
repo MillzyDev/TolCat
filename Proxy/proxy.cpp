@@ -35,12 +35,14 @@ HMODULE getOriginalHandle() {
     std::filesystem::path original_dll(system32);
     original_dll /= "version.dll";
 
+    // I think the machine is beyond fucked if it somehow can't find a dll in system32,
+    // so I don't think error handling is worth the effort here.
     return LoadLibraryA(original_dll.string().c_str());
 }
 
-void load_exports() {
+void loadExports() {
     HMODULE module = getOriginalHandle();
-
+    // tbf the macro spam could be worse
     PROXY_ADDRESS(module, GetFileVersionInfoA);
     PROXY_ADDRESS(module, GetFileVersionInfoByHandle);
     PROXY_ADDRESS(module, GetFileVersionInfoExA);
