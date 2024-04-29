@@ -42,7 +42,7 @@ HMODULE getOriginalHandle() {
 
 void loadExports() {
     HMODULE module = getOriginalHandle();
-    // tbf the macro spam could be worse
+
     PROXY_ADDRESS(module, GetFileVersionInfoA);
     PROXY_ADDRESS(module, GetFileVersionInfoByHandle);
     PROXY_ADDRESS(module, GetFileVersionInfoExA);
