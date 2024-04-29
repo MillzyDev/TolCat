@@ -28,6 +28,11 @@ include(unity.cmake)
 add_compile_definitions(
         UNITY_MAJOR=\"${UNITY_MAJOR}\"
         UNITY_MINOR=\"${UNITY_MINOR}\"
+        UNITY_PATCH=\"${UNITY_PATCH}\"
+
+        UNITY_${UNITY_MAJOR}
+        UNITY_${UNITY_MAJOR}_${UNITY_MINOR}
+        UNITY_${UNITY_MAJOR}_${UNITY_MINOR}_${UNITY_PATCH}
 )
 
 # IL2CPP
@@ -56,6 +61,12 @@ add_compile_definitions(
         MOD_ENTRY_POINT=\"${MOD_ENTRY_POINT}\"
 )
 
+# Game Properties
+add_compile_definitions(
+        GAME_COMPANY=\"${GAME_COMPANY}\"
+        GAME_NAME=\"${GAME_NAME}\"
+)
+
 # TolCat Target
 add_library(TolCat SHARED)
 
@@ -80,6 +91,20 @@ add_library(Preloader SHARED)
 
 set_target_properties(Preloader PROPERTIES OUTPUT_NAME "Preloader")
 set_target_properties(Preloader PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin")
+
+if (UNITY_MAJOR_AGNOSTIC)
+    target_compile_definitions(Preloader PRIVATE UNITY_MAJOR_AGNOSTIC)
+endif ()
+if (UNITY_MINOR_AGNOSTIC)
+    target_compile_definitions(Preloader PRIVATE UNITY_MINOR_AGNOSTIC)
+endif ()
+if (UNITY_PATCH_AGNOSTIC)
+    target_compile_definitions(Preloader PRIVATE UNITY_PATCH_AGNOSTIC)
+endif ()
+
+if (GAME_AGNOSTIC)
+    target_compile_definitions(Preloader PRIVATE GAME_AGNOSTIC)
+endif ()
 
 target_include_directories(
         Preloader PRIVATE "${CMAKE_SOURCE_DIR}/Preloader/include"
