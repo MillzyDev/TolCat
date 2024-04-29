@@ -11,7 +11,7 @@ extern void loadExports(); // proxy.cpp
 
 void handleSystemError(DWORD error, const char *function, const char *line) {
     auto errorCode = std::error_code(static_cast<int>(error), std::system_category());
-    std::string message = std::format("And error occurred in {0}:{1}\n0x{2:x} | {3}",
+    std::string message = std::format("An error occurred in {0}:{1}\n0x{2:x} | {3}",
                                           function, line, errorCode.value(), errorCode.message());
     (void)MessageBoxA(nullptr, message.c_str(), "TolCat Proxy Error", MB_ICONERROR | MB_OK);
 }
@@ -29,21 +29,32 @@ void handleSystemError(DWORD error, const char *function, const char *line) {
 
     // Get main exe name
     char mainModuleName[MAX_PATH];
-    DWORD error = GetModuleFileNameA(nullptr, mainModuleName, sizeof(mainModuleName));
-    if (error) {
-        HANDLE_SYSTEM_ERROR(error);
+    DWORD dataLength = GetModuleFileNameA(nullptr, mainModuleName, sizeof(mainModuleName));
+    if (!dataLength) {
+        HANDLE_SYSTEM_ERROR(GetLastError());
         return FALSE;
     }
 
-    // Check if data exists folder
+    // Check if data exists
     std::filesystem::path mainModulePath(mainModuleName);
     std::filesystem::path dataFolder = mainModulePath.parent_path() / mainModulePath.stem().string().append("_Data");
     if (!exists(dataFolder)) {
         return TRUE;
     }
 
-    // Load Preloader
+    std::filesystem::path modDataFolder = mainModulePath.parent_path() / MOD_NAME "_Data";
+    if (!exists(modDataFolder)) {
+        return TRUE;
+    }
 
+    // Load Preloader
+    std::filesystem::path preloaderPath = modDataFolder / "Preloader.dll";
+    HMODULE preloader = LoadLibraryExW(preloaderPath.c_str(), nullptr, LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR);
+
+    if (!preloader) {
+        HANDLE_SYSTEM_ERROR(GetLastError());
+        return FALSE;
+    }
 
     return TRUE;
 }
