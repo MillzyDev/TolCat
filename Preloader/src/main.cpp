@@ -1,9 +1,3 @@
-/**
- * Preloader is responsible for doing the final checks before performing the TolCat initialisation steps
- * Tolcat is basically just a library with all the modding functions in it.
- * The preloader checks if the unity version and target game are correct, and then loads TolCat
-*/
-
 #if WIN32
 #include <windows.h>
 #else
@@ -17,19 +11,19 @@
 #include "error_handling.hpp"
 #include "sanity_checks.hpp"
 
-bool loadTolCat(bool requireSanity) {
+BOOL loadTolCat(TolCatLaunchArgs launchArgs) {
     char mainModuleName[MAX_PATH];
     DWORD dataLength = GetModuleFileNameA(nullptr, mainModuleName, sizeof(mainModuleName));
     if (!dataLength) {
         HANDLE_SYSTEM_ERROR(GetLastError());
-        return false;
+        return FALSE;
     }
 
     std::filesystem::path mainModulePath(mainModuleName);
     std::filesystem::path dataFolder = mainModulePath.parent_path() / mainModulePath.stem().string().append("_Data");
 
     bool isClean = true;
-    if (requireSanity) {
+    if (!hasLaunchArg(launchArgs, TolCatLaunchArgs::FORCE_LOAD)) {
         isClean = unitySanityClean(dataFolder / "globalgamemanagers") && gameSanityClean(dataFolder / "app.info");
     }
 
@@ -39,11 +33,11 @@ bool loadTolCat(bool requireSanity) {
 
         if (!tolCatHandle) {
             HANDLE_SYSTEM_ERROR(GetLastError());
-            return false;
+            return FALSE;
         }
     }
 
-    return true;
+    return TRUE;
 }
 
 #pragma clang diagnostic push
@@ -60,7 +54,6 @@ bool loadTolCat(bool requireSanity) {
     }
 
     TolCatLaunchArgs launchArgs = getLaunchArgs();
-    return loadTolCat(!hasLaunchArg(launchArgs, TolCatLaunchArgs::FORCE_LOAD));
-
+    return loadTolCat(launchArgs);
 }
 #pragma clang diagnostic pop
