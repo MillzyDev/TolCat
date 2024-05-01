@@ -18,13 +18,17 @@ namespace TolCat {
     private:
         std::ofstream logFileStream;
     public:
-        LoggerFileOutput(const std::filesystem::path &logsDir);
+        explicit LoggerFileOutput(const std::filesystem::path &logsDir);
         void logInfo(std::string timestamp, std::string nameSection, std::string messageSection) override;
         void logWarn(std::string timestamp, std::string nameSection, std::string messageSection) override;
         void logError(std::string timestamp, std::string nameSection, std::string messageSection) override;
     };
 
     class TOLCAT_API LoggerConsoleOutput : public LoggerOutputInterface {
+    private:
+        std::ofstream conOutStream;
+    public:
+        LoggerConsoleOutput();
         void logInfo(std::string timestamp, std::string nameSection, std::string messageSection) override;
         void logWarn(std::string timestamp, std::string nameSection, std::string messageSection) override;
         void logError(std::string timestamp, std::string nameSection, std::string messageSection) override;
