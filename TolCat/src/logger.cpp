@@ -10,16 +10,12 @@
 #include "files.hpp"
 
 namespace TolCat {
-#pragma region ILoggerOutput
 
     void ILoggerOutput::logInfo(const std::string &timestamp, const std::string &nameSection, const std::string &messageSection) {}
 
     void ILoggerOutput::logWarn(const std::string &timestamp, const std::string &nameSection, const std::string &messageSection) {}
 
     void ILoggerOutput::logError(const std::string &timestamp, const std::string &nameSection, const std::string &messageSection) {}
-
-#pragma endregion
-#pragma region LoggerFileOutput
 
     LoggerFileOutput::LoggerFileOutput(const std::filesystem::path &logsDir) {
         std::error_code error;
@@ -90,9 +86,6 @@ namespace TolCat {
 
     }
 
-#pragma endregion
-#pragma region LoggerConsoleOutput
-
     LoggerConsoleOutput::LoggerConsoleOutput() {
         SetLastError(0);
 
@@ -129,6 +122,4 @@ namespace TolCat {
 
     }
 
-#pragma endregion
-
-}
+} // namespace TolCat
