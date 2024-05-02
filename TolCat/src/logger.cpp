@@ -1,18 +1,22 @@
-#include <windows.h>
-#include <chrono>
-#include <format>
-#include "errors.hpp"
-#include "files.hpp"
 #include "logger.hpp"
 
+#include <chrono>
+#include <format>
+#include <set>
+
+#include <windows.h>
+
+#include "errors.hpp"
+#include "files.hpp"
+
 namespace TolCat {
-#pragma region LoggerOutputInterface
+#pragma region ILoggerOutput
 
-    void LoggerOutputInterface::logInfo(const std::string &timestamp, const std::string &nameSection, const std::string &messageSection) {}
+    void ILoggerOutput::logInfo(const std::string &timestamp, const std::string &nameSection, const std::string &messageSection) {}
 
-    void LoggerOutputInterface::logWarn(const std::string &timestamp, const std::string &nameSection, const std::string &messageSection) {}
+    void ILoggerOutput::logWarn(const std::string &timestamp, const std::string &nameSection, const std::string &messageSection) {}
 
-    void LoggerOutputInterface::logError(const std::string &timestamp, const std::string &nameSection, const std::string &messageSection) {}
+    void ILoggerOutput::logError(const std::string &timestamp, const std::string &nameSection, const std::string &messageSection) {}
 
 #pragma endregion
 #pragma region LoggerFileOutput
@@ -24,7 +28,7 @@ namespace TolCat {
 
         if (exists(latestLog)) {
             std::filesystem::file_time_type lastWrite = std::filesystem::last_write_time(latestLog, error);
-            ERROR_ABORT_UNLESS(error.value());
+            ERROR_ABORT_UNLESS(error.value())
 
             std::string previousLogName =
                     std::format(MOD_NAME "_{0:%Y-%m-%d_%H-%M-%S}.log",
@@ -34,10 +38,44 @@ namespace TolCat {
             std::filesystem::path previousLog = logsDir / previousLogName;
             std::filesystem::rename(latestLog, previousLog, error);
 
-            ERROR_ABORT_UNLESS(error.value());
+            ERROR_ABORT_UNLESS(error.value())
+        }
+
+        // count and sort files
+        auto it = std::filesystem::directory_iterator(logsDir);
+        std::set<std::filesystem::path> logs;
+        for (const std::filesystem::directory_entry& entry : it) {
+            const std::filesystem::path& entryPath = entry.path();
+
+            if (entryPath.has_extension()) {
+                if (entryPath.extension() == ".log") {
+                    logs.insert(entryPath);
+                }
+            }
+        }
+
+        // in alphabetical order, oldest files are first
+        size_t size = logs.size();
+        if (size > 10) {
+            size_t deleteCount = size - 10;
+            for (const std::filesystem::path& oldestLog : logs) {
+                if (!deleteCount) {
+                    break;
+                }
+                deleteCount--;
+
+                if (!exists(oldestLog)) {
+                    continue;
+                }
+
+                if(!std::filesystem::remove(oldestLog, error)) {
+                    ERROR_ABORT(error.value());
+                }
+            }
         }
 
         this->logFileStream = std::ofstream(latestLog);
+
     }
 
     void LoggerFileOutput::logInfo(const std::string& timestamp, const std::string &nameSection, const std::string &messageSection) {
