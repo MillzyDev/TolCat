@@ -1,8 +1,9 @@
-#pragma once
-
-#include <filesystem>
+#ifndef TOLCAT_FILES_H_
+#define TOLCAT_FILES_H_
 
 #include "tolcat_config.hpp"
+
+#include <filesystem>
 
 namespace TolCat::Files {
     /**
@@ -35,3 +36,5 @@ namespace TolCat::Files {
      */
     TOLCAT_API std::filesystem::path getLogsDir();
 }
+
+#endif // TOLCAT_FILES_H_

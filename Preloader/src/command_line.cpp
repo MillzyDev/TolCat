@@ -1,9 +1,10 @@
-#include <windows.h>
+#include "command_line.hpp"
+
+#include <format>
 #include <string>
 #include <map>
 
-#include <format>
-#include "command_line.hpp"
+#include <windows.h>
 
 TolCatLaunchArgs getLaunchArgs() {
     LPWSTR commandLineStr = GetCommandLineW();
@@ -17,7 +18,6 @@ TolCatLaunchArgs getLaunchArgs() {
         auto it = launchArgsReference.find(std::wstring(argv[index]));
         if (it != launchArgsReference.end()) {
             flags |= it->second;
-            MessageBoxA(nullptr, std::format("Has flag {:b}", (unsigned int)it->second).c_str(), "aaa", MB_OK);
         }
     }
 

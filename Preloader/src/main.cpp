@@ -1,11 +1,6 @@
-#if WIN32
-#include <windows.h>
-#else
-#error "Unsupported platform"
-// support for linux planned eventually
-#endif
-
 #include <filesystem>
+
+#include <windows.h>
 
 #include "command_line.hpp"
 #include "error_handling.hpp"

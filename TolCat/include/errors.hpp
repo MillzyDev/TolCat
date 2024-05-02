@@ -1,4 +1,5 @@
-#pragma once
+#ifndef TOLCAT_ERRORS_H_
+#define TOLCAT_ERRORS_H_
 
 #include <string>
 #include <type_traits>
@@ -20,7 +21,9 @@
 
 namespace TolCat::Errors {
     [[nodiscard]] TOLCAT_API std::string getErrorMessage(DWORD code);
-    TOLCAT_API void abortWithError(DWORD code, const char *function, uint64_t line);
+    TOLCAT_API void abortWithError(DWORD code, const char *function, unsigned long line);
 }
 
 #undef ALPHA1_EXPORT
+
+#endif // TOLCAT_ERRORS_H_

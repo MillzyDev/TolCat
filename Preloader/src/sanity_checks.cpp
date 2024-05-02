@@ -1,15 +1,14 @@
+#include "sanity_checks.hpp"
 
-#include <windows.h>
+#include <fstream>
 #include <sstream>
 #include <string>
 
-#include "sanity_checks.hpp"
-
-#define UNITY_VERSION_OFFSET 0x00000030
-
 bool unitySanityClean(const std::filesystem::path& globalGameManagersPath) {
+    constexpr unsigned int kUnityVersionOffset = 0x00000030;
+
     std::ifstream globalGameManagers(globalGameManagersPath);
-    globalGameManagers.seekg(UNITY_VERSION_OFFSET);
+    globalGameManagers.seekg(kUnityVersionOffset);
     std::string unityVersion;
     std::getline(globalGameManagers, unityVersion, '\0');
 

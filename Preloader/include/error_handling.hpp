@@ -1,4 +1,5 @@
-#pragma once
+#ifndef PRELOADER_ERROR_HANDLING_H_
+#define PRELOADER_ERROR_HANDLING_H_
 
 #include <windows.h>
 #include <format>
@@ -14,3 +15,5 @@ inline void handleSystemError(DWORD error, const char *function, const char *lin
                                       function, line, errorCode.value(), errorCode.message());
     (void)MessageBoxA(nullptr, message.c_str(), "TolCat Preloader Error", MB_ICONERROR | MB_OK);
 }
+
+#endif // PRELOADER_ERROR_HANDLING_H_

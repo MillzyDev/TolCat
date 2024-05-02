@@ -1,7 +1,7 @@
+#include <filesystem>
+
 #include <libloaderapi.h>
 #include <sysinfoapi.h>
-
-#include <filesystem>
 
 #define PROXY_FUNCTION(name)                            \
 FARPROC orig_##name;                                    \

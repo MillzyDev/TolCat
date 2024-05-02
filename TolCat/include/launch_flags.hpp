@@ -1,11 +1,11 @@
-#pragma once
+#ifndef TOLCAT_LAUNCH_FLAGS_H_
+#define TOLCAT_LAUNCH_FLAGS_H_
 
-#include <cstdint>
 #include <map>
 #include <string>
 
-enum TolCatLaunchArgs : uint32_t {
-    NONE = 0,
+enum TolCatLaunchArgs : unsigned int {
+    NONE [[maybe_unused]] = 0,
     FORCE_LOAD = 1 << 0, //    --force-load          Skips all sanity checks performed by the preloader
     DEBUG_CONSOLE = 1 << 1, // --debug-console       Creates a console log window, on by default if debug build
     NO_ADDONS = 1 << 2, //     --no-addons           Disables the addon system
@@ -13,11 +13,11 @@ enum TolCatLaunchArgs : uint32_t {
 };
 
 inline TolCatLaunchArgs operator |(TolCatLaunchArgs lhs, TolCatLaunchArgs rhs) {
-    return static_cast<TolCatLaunchArgs>(static_cast<uint32_t>(lhs) | static_cast<uint32_t>(rhs));
+    return static_cast<TolCatLaunchArgs>(static_cast<unsigned int>(lhs) | static_cast<unsigned int>(rhs));
 }
 
 inline TolCatLaunchArgs operator &(TolCatLaunchArgs lhs, TolCatLaunchArgs rhs) {
-    return static_cast<TolCatLaunchArgs>(static_cast<uint32_t>(lhs) & static_cast<uint32_t>(rhs));
+    return static_cast<TolCatLaunchArgs>(static_cast<unsigned int>(lhs) & static_cast<unsigned int>(rhs));
 }
 
 inline TolCatLaunchArgs &operator |= (TolCatLaunchArgs &lhs, TolCatLaunchArgs rhs) {
@@ -27,3 +27,5 @@ inline TolCatLaunchArgs &operator |= (TolCatLaunchArgs &lhs, TolCatLaunchArgs rh
 inline bool hasLaunchArg(TolCatLaunchArgs subject, TolCatLaunchArgs flag) {
     return (subject & flag) == flag;
 }
+
+#endif // TOLCAT_LAUNCH_FLAGS_H_

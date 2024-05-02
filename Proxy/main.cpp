@@ -1,7 +1,8 @@
-#include <windows.h>
-#include <system_error>
-#include <format>
 #include <filesystem>
+#include <format>
+#include <system_error>
+
+#include <windows.h>
 
 #define PRE_STR2(k) #k
 #define PRE_STR(k) PRE_STR2(k)
