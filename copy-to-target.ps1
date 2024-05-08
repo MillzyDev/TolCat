@@ -11,12 +11,12 @@ Param(
 
 $proxySource = Join-Path -Path $buildDir -ChildPath "version.dll"
 $proxyDest = $targetGameDir
-Copy-Item $proxySource -Destination $proxyDest
+Copy-Item $proxySource -Destination $proxyDest -Force
 
 $preloaderSource = Join-Path -Path $buildDir -ChildPath "Preloader.dll"
 $proxyDest = Join-Path -Path $targetGameDir -ChildPath $modName"_Data"
-Copy-Item $preloaderSource -Destination $proxyDest
+Copy-Item $preloaderSource -Destination $proxyDest -Force
 
 $tolCatSource = Join-Path -Path $buildDir -ChildPath "TolCat.dll"
 $tolCatDest = Join-Path -Path $targetGameDir -ChildPath $modName"_Data"
-Copy-Item $tolCatSource -Destination $tolCatDest
+Copy-Item $tolCatSource -Destination $tolCatDest -Force
