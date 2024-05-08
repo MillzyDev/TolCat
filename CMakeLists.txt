@@ -9,7 +9,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED 20)
 add_compile_options(-fdeclspec) # dllexport
 add_compile_options(-O3)
 
-set(NO_MOD_MOD ON)
+set(NO_MOD_MODE ON)
 
 if (WIN32)
     set(CMAKE_SHARED_LIBRARY_PREFIX "")
@@ -57,8 +57,9 @@ include_directories(IL2CPP_DIR)
 
 # Mod Properties
 if (${NO_MOD_MODE})
+    set(MOD_NAME "TolCat")
     add_compile_definitions(
-        MOD_NAME=\"TolCat\"
+        MOD_NAME=\"${MOD_NAME}\"
         MOD_VERSION=\"0.0.0\"
     )
 else ()
@@ -142,4 +143,21 @@ if (WIN32)
     )
 
     target_link_options(Proxy PRIVATE "-static")
+endif ()
+
+file(READ game_path.txt GAME_PATH)
+
+message(STATUS ${MOD_NAME})
+
+if (WIN32)
+add_custom_command(
+        TARGET TolCat
+        COMMAND powershell.exe
+                -File ${CMAKE_SOURCE_DIR}/copy-to-target.ps1
+                -modName "${MOD_NAME}"
+                -targetGameDir "${GAME_PATH}"
+                -buildDir "${CMAKE_CURRENT_BINARY_DIR}"
+)
+else ()
+# TODO
 endif ()
