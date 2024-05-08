@@ -56,6 +56,8 @@ endif ()
 include_directories(IL2CPP_DIR)
 
 # Mod Properties
+include(mod.cmake)
+
 if (${NO_MOD_MODE})
     set(MOD_NAME "TolCat")
     add_compile_definitions(
@@ -63,7 +65,6 @@ if (${NO_MOD_MODE})
         MOD_VERSION=\"0.0.0\"
     )
 else ()
-    include(mod.cmake)
     add_compile_definitions(
         MOD_NAME=\"${MOD_NAME}\"
         MOD_VERSION=\"${MOD_VERSION}\"
