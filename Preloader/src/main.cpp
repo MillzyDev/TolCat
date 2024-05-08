@@ -30,6 +30,15 @@ BOOL loadTolCat(TolCatLaunchArgs launchArgs) {
             HANDLE_SYSTEM_ERROR(GetLastError());
             return FALSE;
         }
+
+        auto launchTolCat = reinterpret_cast<void (*)(TolCatLaunchArgs)>(GetProcAddress(tolCatHandle, "launchTolCat"));
+        if (launchTolCat) {
+            launchTolCat(launchArgs);
+            return TRUE;
+        }
+
+        HANDLE_SYSTEM_ERROR(GetLastError());
+        return FALSE;
     }
 
     return TRUE;
