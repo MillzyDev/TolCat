@@ -122,4 +122,6 @@ namespace TolCat {
 
     }
 
+    std::vector<ILoggerOutput> Logger::loggerOutputs;
+
 } // namespace TolCat
