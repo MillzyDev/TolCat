@@ -75,15 +75,15 @@ namespace TolCat {
     }
 
     void LoggerFileOutput::logInfo(const std::string& timestamp, const std::string &nameSection, const std::string &messageSection) {
-
+        this->logFileStream << "[" << timestamp << "] [" << nameSection << "] " << messageSection << "\n";
     }
 
     void LoggerFileOutput::logWarn(const std::string& timestamp, const std::string &nameSection, const std::string &messageSection) {
-
+        this->logFileStream << "[" << timestamp << "] [" << nameSection << "] WARNING: " << messageSection << "\n";
     }
 
     void LoggerFileOutput::logError(const std::string& timestamp, const std::string &nameSection, const std::string &messageSection) {
-
+        this->logFileStream << "[" << timestamp << "] [" << nameSection << "] ERROR: " << messageSection << "\n";
     }
 
     LoggerConsoleOutput::LoggerConsoleOutput() {
@@ -110,18 +110,40 @@ namespace TolCat {
         }
 
         this->conOutStream.open("CONOUT$");
+        this->conOutStream << kAnsiGrey;
     }
 
     void LoggerConsoleOutput::logInfo(const std::string &timestamp, const std::string &nameSection, const std::string &messageSection) {
-
+        this->conOutStream
+            << kAnsiWhite << "["
+            << kAnsiGreen << timestamp
+            << kAnsiWhite << "] ["
+            << kAnsiCyan << nameSection
+            << kAnsiWhite << "] "
+            << messageSection
+            << kAnsiReset << "\n";
     }
 
     void LoggerConsoleOutput::logWarn(const std::string &timestamp, const std::string &nameSection, const std::string &messageSection) {
-
+        this->conOutStream
+                << kAnsiYellow << "["
+                << timestamp
+                << "] ["
+                << nameSection
+                << "] WARNING: "
+                << messageSection
+                << kAnsiReset << "\n";
     }
 
     void LoggerConsoleOutput::logError(const std::string &timestamp, const std::string &nameSection, const std::string &messageSection) {
-
+        this->conOutStream
+                << kAnsiRed << "["
+                << timestamp
+                << "] ["
+                << nameSection
+                << "] ERROR: "
+                << messageSection
+                << kAnsiReset << "\n";
     }
 
     std::vector<ILoggerOutput> Logger::loggerOutputs;
