@@ -16,7 +16,7 @@ namespace TolCat::Errors {
         return errorMessage;
     }
 
-    __declspec(noreturn) void abortWithError(DWORD code, const char *function, uint64_t line) {
+    __declspec(noreturn) void abortWithError(DWORD code, const char *function, unsigned long line) {
         std::string message = getErrorMessage(code);
 
         std::stringstream messageStream;
