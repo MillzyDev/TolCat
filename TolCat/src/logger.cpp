@@ -89,7 +89,8 @@ namespace TolCat {
     LoggerConsoleOutput::LoggerConsoleOutput() {
         SetLastError(0);
 
-        if (!AllocConsole()) {
+        if (!AllocConsole()) { // allocate a console
+            // failing here likely means someone is trying to do something naughty
             ERROR_ABORT(GetLastError()); // noreturn
         }
 
@@ -103,6 +104,7 @@ namespace TolCat {
             ERROR_ABORT(GetLastError()); // noreturn
         }
 
+        // Allow the console to work with ANSI escape codes
         if (!SetConsoleMode(consoleOutHandle, (consoleOutMode | ENABLE_VIRTUAL_TERMINAL_PROCESSING))) {
             ERROR_ABORT(GetLastError()); // noreturn
         }
