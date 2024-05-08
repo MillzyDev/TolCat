@@ -35,6 +35,21 @@ namespace TolCat::Files {
      * @return The path to the logs directory.
      */
     TOLCAT_API std::filesystem::path getLogsDir();
+
+    /**
+     * Creates the Logs directory,
+     */
+    TOLCAT_API void createLogsDir();
+
+    /**
+     * Creates the User Libs directory,
+     */
+    TOLCAT_API void createUserLibsDir();
+
+    /**
+     * Creates the Addons directory,
+     */
+    TOLCAT_API void createAddonsDir();
 }
 
 #endif // TOLCAT_FILES_H_
