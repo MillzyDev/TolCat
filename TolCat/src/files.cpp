@@ -10,30 +10,44 @@ std::filesystem::path name() {                                                  
     return dirPath;                                                                 \
 }
 
-#define MOD_DATA MOD_NAME "_Data"
+constexpr const char *kModData = MOD_NAME "_Data";
 
 namespace TolCat::Files {
     std::filesystem::path getBaseDir() {
-        static std::optional<std::filesystem::path> base_dir;
-        if (base_dir.has_value()) { // return path if already assigned
-            return base_dir.value();
+        static std::optional<std::filesystem::path> baseDir;
+        if (baseDir.has_value()) { // return path if already assigned
+            return baseDir.value();
         }
 
         SetLastError(0);
-        char main_process[MAX_PATH];
-        if(!GetModuleFileNameA(nullptr, main_process, MAX_PATH)) {
+        char mainProcess[MAX_PATH];
+        if(!GetModuleFileNameA(nullptr, mainProcess, MAX_PATH)) {
             ERROR_ABORT(GetLastError());
         }
 
-        base_dir = std::filesystem::path(main_process).parent_path(); // get the directory the root process is in
-        return base_dir.value();
+        baseDir = std::filesystem::path(mainProcess).parent_path(); // get the directory the root process is in
+        return baseDir.value();
     }
 
-    // TODO: remove macros for clarity
-    SUBDIR_GETTER(getModDir, MOD_DATA)
-    SUBDIR_GETTER(getAddonsDir, MOD_DATA / "Addons")
-    SUBDIR_GETTER(getUserLibsDir, MOD_DATA / "UserLibs")
-    SUBDIR_GETTER(getLogsDir, MOD_DATA / "Logs")
+    std::filesystem::path getModDir() {
+        static std::filesystem::path modDir = getBaseDir() / kModData;
+        return modDir;
+    }
+
+    std::filesystem::path getAddonsDir() {
+        static std::filesystem::path addonsDir = getBaseDir() / kModData / "Addons";
+        return addonsDir;
+    }
+
+    std::filesystem::path getUserLibsDir() {
+        static std::filesystem::path userLibsDir = getBaseDir() / kModData / "UserLibs";
+        return userLibsDir;
+    }
+
+    std::filesystem::path getLogsDir() {
+        static std::filesystem::path logsDir = getBaseDir() / kModData / "Logs";
+        return logsDir;
+    }
 
     void createLogsDir() {
         std::error_code errorCode;
