@@ -44,7 +44,7 @@ namespace TolCat {
 
     public:
         template<class TLoggerOutput>
-        inline void addLoggerOutput(TLoggerOutput loggerOutput) {
+        inline static void addLoggerOutput(TLoggerOutput loggerOutput) {
             static_assert(std::is_base_of_v<ILoggerOutput, TLoggerOutput>, "Class of TLoggerOutput must derive from ILoggerOutput");
             loggerOutputs.push_back(loggerOutput);
         }
