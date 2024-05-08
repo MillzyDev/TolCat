@@ -45,7 +45,7 @@ void handleSystemError(DWORD error, const char *function, const char *line) {
 
     std::filesystem::path modDataFolder = mainModulePath.parent_path() / MOD_NAME "_Data";
     if (!exists(modDataFolder)) {
-        return TRUE;
+        return FALSE;
     }
 
     // Load Preloader
