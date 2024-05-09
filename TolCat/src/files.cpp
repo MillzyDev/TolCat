@@ -1,18 +1,15 @@
+#include "files.hpp"
+
+#include <filesystem>
 #include <optional>
+
 #include <windows.h>
 
 #include "errors.hpp"
-#include "files.hpp"
-
-#define SUBDIR_GETTER(name, subdir)                                                 \
-std::filesystem::path name() {                                                      \
-    static std::filesystem::path dirPath = ::TolCat::Files::getBaseDir() / subdir;  \
-    return dirPath;                                                                 \
-}
-
-constexpr const char *kModData = MOD_NAME "_Data";
 
 namespace TolCat::Files {
+    constexpr const char *kModData = MOD_NAME "_Data";
+
     std::filesystem::path getBaseDir() {
         static std::optional<std::filesystem::path> baseDir;
         if (baseDir.has_value()) { // return path if already assigned
@@ -87,4 +84,4 @@ namespace TolCat::Files {
             ERROR_ABORT(errorCode.value());
         }
     }
-}
+} // namespace TolCat::Files
