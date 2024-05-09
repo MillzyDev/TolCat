@@ -117,7 +117,7 @@ namespace TolCat {
         }
 
         this->conOutStream.open("CONOUT$");
-        this->conOutStream << kAnsiGrey;
+        this->conOutStream << kAnsiGrey; // for unity memory stuff
     }
 
     void LoggerConsoleOutput::logInfo(const std::string &timestamp, const std::string &nameSection, const std::string &messageSection) {
