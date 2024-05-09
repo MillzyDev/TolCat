@@ -10,6 +10,14 @@
 #include "files.hpp"
 
 namespace TolCat {
+    std::string getTimestamp() {
+        std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();
+        std::string timestamp = std::format(
+                "{0:%H:%M:%S}",
+                std::chrono::time_point_cast<std::chrono::milliseconds>(now)
+        );
+        return timestamp;
+    }
 
     void ILoggerOutput::logInfo(const std::string &timestamp, const std::string &nameSection, const std::string &messageSection) {}
 
@@ -71,7 +79,6 @@ namespace TolCat {
         }
 
         this->logFileStream = std::ofstream(latestLog);
-
     }
 
     void LoggerFileOutput::logInfo(const std::string& timestamp, const std::string &nameSection, const std::string &messageSection) {
@@ -147,5 +154,30 @@ namespace TolCat {
     }
 
     std::vector<ILoggerOutput> Logger::loggerOutputs;
+
+    void Logger::logInfo(const std::string& nameSection, const std::string &messageSection) {
+        std::string timestamp = getTimestamp();
+        for (ILoggerOutput output : loggerOutputs) {
+            output.logInfo(timestamp, nameSection, messageSection);
+        }
+    }
+
+    void Logger::logWarn(const std::string &nameSection, const std::string &messageSection) {
+        std::string timestamp = getTimestamp();
+        for (ILoggerOutput output : loggerOutputs) {
+            output.logWarn(timestamp, nameSection, messageSection);
+        }
+    }
+
+    void Logger::logError(const std::string &nameSection, const std::string &messageSection) {
+        std::string timestamp = getTimestamp();
+        for (ILoggerOutput output : loggerOutputs) {
+            output.logError(timestamp, nameSection, messageSection);
+        }
+    }
+
+    Logger::Logger(std::string_view sourceName) {
+        this->sourceName = sourceName;
+    }
 
 } // namespace TolCat

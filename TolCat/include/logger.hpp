@@ -10,6 +10,8 @@
 #include <type_traits>
 
 namespace TolCat {
+    TOLCAT_API std::string getTimestamp();
+
     class TOLCAT_API ILoggerOutput {
     public:
         virtual void logInfo(const std::string &timestamp, const std::string &nameSection, const std::string &messageSection);
@@ -52,14 +54,44 @@ namespace TolCat {
     private:
         static std::vector<ILoggerOutput> loggerOutputs;
 
+        std::string_view sourceName;
+
+        static void logInfo(const std::string& nameSection, const std::string &messageSection);
+        static void logWarn(const std::string &nameSection, const std::string &messageSection);
+        static void logError(const std::string &nameSection, const std::string &messageSection);
+
     public:
+        explicit Logger(std::string_view sourceName);
+
         template<class TLoggerOutput>
         inline static void addLoggerOutput(TLoggerOutput loggerOutput) {
             static_assert(std::is_base_of_v<ILoggerOutput, TLoggerOutput>, "Class of TLoggerOutput must derive from ILoggerOutput");
             loggerOutputs.push_back(loggerOutput);
         }
 
-        // TODO: die
+        template<typename... Args>
+        inline void info(std::format_string<Args...> format, Args &&...args) {
+            logInfo(
+                this->sourceName,
+                std::vformat(format.get(), std::make_format_args(args...))
+            );
+        }
+
+        template<typename... Args>
+        inline void warn(std::format_string<Args...> format, Args &&...args) {
+            logWarn(
+                    this->sourceName,
+                    std::vformat(format.get(), std::make_format_args(args...))
+            );
+        }
+
+        template<typename... Args>
+        inline void error(std::format_string<Args...> format, Args &&...args) {
+            logError(
+                    this->sourceName,
+                    std::vformat(format.get(), std::make_format_args(args...))
+            );
+        }
     };
 }
 
