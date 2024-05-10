@@ -2,7 +2,9 @@
 
 #include <chrono>
 #include <format>
+#include <memory>
 #include <set>
+#include <utility>
 
 #include <windows.h>
 
@@ -81,15 +83,15 @@ namespace TolCat {
         this->logFileStream = std::ofstream(latestLog);
     }
 
-    void LoggerFileOutput::logInfo(const std::string& timestamp, const std::string &nameSection, const std::string &messageSection) {
+    void LoggerFileOutput::logInfo(const std::string &timestamp, const std::string &nameSection, const std::string &messageSection) {
         this->logFileStream << "[" << timestamp << "] [" << nameSection << "] " << messageSection << "\n";
     }
 
-    void LoggerFileOutput::logWarn(const std::string& timestamp, const std::string &nameSection, const std::string &messageSection) {
+    void LoggerFileOutput::logWarn(const std::string &timestamp, const std::string &nameSection, const std::string &messageSection) {
         this->logFileStream << "[" << timestamp << "] [" << nameSection << "] WARNING: " << messageSection << "\n";
     }
 
-    void LoggerFileOutput::logError(const std::string& timestamp, const std::string &nameSection, const std::string &messageSection) {
+    void LoggerFileOutput::logError(const std::string &timestamp, const std::string &nameSection, const std::string &messageSection) {
         this->logFileStream << "[" << timestamp << "] [" << nameSection << "] ERROR: " << messageSection << "\n";
     }
 
@@ -153,31 +155,35 @@ namespace TolCat {
                 << kAnsiReset << "\n";
     }
 
-    std::vector<ILoggerOutput> Logger::loggerOutputs;
+    void LoggerConsoleOutput::makeGrey() {
+        this->conOutStream << kAnsiGrey;
+    }
+
+    std::map<const char *, std::unique_ptr<ILoggerOutput>> Logger::loggerOutputs;
 
     void Logger::logInfo(const std::string& nameSection, const std::string &messageSection) {
         std::string timestamp = getTimestamp();
-        for (ILoggerOutput output : loggerOutputs) {
-            output.logInfo(timestamp, nameSection, messageSection);
+        for (auto &output : loggerOutputs) {
+            output.second->logInfo(timestamp, nameSection, messageSection);
         }
     }
 
     void Logger::logWarn(const std::string &nameSection, const std::string &messageSection) {
         std::string timestamp = getTimestamp();
-        for (ILoggerOutput output : loggerOutputs) {
-            output.logWarn(timestamp, nameSection, messageSection);
+        for (auto &output : loggerOutputs) {
+            output.second->logWarn(timestamp, nameSection, messageSection);
         }
     }
 
     void Logger::logError(const std::string &nameSection, const std::string &messageSection) {
         std::string timestamp = getTimestamp();
-        for (ILoggerOutput output : loggerOutputs) {
-            output.logError(timestamp, nameSection, messageSection);
+        for (auto &output : loggerOutputs) {
+            output.second->logError(timestamp, nameSection, messageSection);
         }
     }
 
-    Logger::Logger(std::string_view sourceName) {
-        this->sourceName = sourceName;
+    Logger::Logger(std::string sourceName) {
+        this->sourceName = std::move(sourceName);
     }
 
 } // namespace TolCat
