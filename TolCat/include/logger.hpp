@@ -3,9 +3,13 @@
 
 #include "tolcat_config.hpp"
 
+#include <windows.h>
+
 #include <filesystem>
 #include <format>
 #include <fstream>
+#include <map>
+#include <memory>
 #include <string>
 #include <type_traits>
 
@@ -17,9 +21,11 @@ namespace TolCat {
         virtual void logInfo(const std::string &timestamp, const std::string &nameSection, const std::string &messageSection);
         virtual void logWarn(const std::string &timestamp, const std::string &nameSection, const std::string &messageSection);
         virtual void logError(const std::string &timestamp, const std::string &nameSection, const std::string &messageSection);
+
+        virtual ~ILoggerOutput() = default;
     };
 
-    class TOLCAT_API LoggerFileOutput : public ILoggerOutput {
+    class TOLCAT_API LoggerFileOutput final : public ILoggerOutput {
     private:
         std::ofstream logFileStream;
 
@@ -30,7 +36,7 @@ namespace TolCat {
         void logError(const std::string &timestamp, const std::string &nameSection, const std::string &messageSection) override;
     };
 
-    class TOLCAT_API LoggerConsoleOutput : public ILoggerOutput {
+    class TOLCAT_API LoggerConsoleOutput final : public ILoggerOutput {
     private:
         std::ofstream conOutStream;
 
@@ -48,25 +54,27 @@ namespace TolCat {
         void logInfo(const std::string &timestamp, const std::string &nameSection, const std::string &messageSection) override;
         void logWarn(const std::string &timestamp, const std::string &nameSection, const std::string &messageSection) override;
         void logError(const std::string &timestamp, const std::string &nameSection, const std::string &messageSection) override;
+
+        void makeGrey();
     };
 
-    class TOLCAT_API Logger {
+    class TOLCAT_API Logger final {
     private:
-        static std::vector<ILoggerOutput> loggerOutputs;
+        static std::map<const char *,std::unique_ptr<ILoggerOutput>> loggerOutputs;
 
-        std::string_view sourceName;
+        std::string sourceName;
 
         static void logInfo(const std::string& nameSection, const std::string &messageSection);
         static void logWarn(const std::string &nameSection, const std::string &messageSection);
         static void logError(const std::string &nameSection, const std::string &messageSection);
 
     public:
-        explicit Logger(std::string_view sourceName);
+        explicit Logger(std::string sourceName);
 
         template<class TLoggerOutput>
-        inline static void addLoggerOutput(TLoggerOutput loggerOutput) {
-            static_assert(std::is_base_of_v<ILoggerOutput, TLoggerOutput>, "Class of TLoggerOutput must derive from ILoggerOutput");
-            loggerOutputs.push_back(loggerOutput);
+        inline static void addLoggerOutput(std::unique_ptr<TLoggerOutput> loggerOutput) {
+            static_assert(std::is_base_of_v<ILoggerOutput, TLoggerOutput>);
+            loggerOutputs.emplace(std::make_pair(typeid(TLoggerOutput).name(), std::move(loggerOutput)));
         }
 
         template<typename... Args>
@@ -93,6 +101,8 @@ namespace TolCat {
             );
         }
     };
+
+    extern Logger tolCatLogger_;
 }
 
 #endif // TOLCAT_LOGGER_H_
