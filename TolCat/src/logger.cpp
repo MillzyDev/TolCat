@@ -2,6 +2,8 @@
 
 #include <chrono>
 #include <format>
+#include <fstream>
+#include <map>
 #include <memory>
 #include <set>
 #include <utility>
@@ -12,6 +14,7 @@
 #include "files.hpp"
 
 namespace TolCat {
+
     std::string getTimestamp() {
         std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();
         std::string timestamp = std::format(
