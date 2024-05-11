@@ -11,7 +11,7 @@ TolCatLaunchArgs getLaunchArgs() {
     int argc;
     LPWSTR *argv = CommandLineToArgvW(commandLineStr, &argc);
 
-    TolCatLaunchArgs flags = TolCatLaunchArgs::NONE;
+    TolCatLaunchArgs flags = TolCatLaunchArgs::kNone;
     for (int index = 1; index < argc; index++) {
         auto it = launchArgsReference.find(std::wstring(argv[index]));
         if (it != launchArgsReference.end()) {

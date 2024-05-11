@@ -5,11 +5,10 @@
 #include <string>
 
 enum TolCatLaunchArgs : unsigned int {
-    NONE [[maybe_unused]] = 0,
-    FORCE_LOAD = 1 << 0, //    --force-load          Skips all sanity checks performed by the preloader
-    DEBUG_CONSOLE = 1 << 1, // --debug-console       Creates a console log window, on by default if debug build
-    NO_ADDONS = 1 << 2, //     --no-addons           Disables the addon system
-    
+    kNone [[maybe_unused]] = 0,
+    kForceLoad = 1 << 0, //    --force-load          Skips all sanity checks performed by the preloader
+    kDebugConsole = 1 << 1, // --debug-console       Creates a console log window, on by default if debug build
+    kNoAddons = 1 << 2, //     --no-addons           Disables the addon system
 };
 
 inline TolCatLaunchArgs operator |(TolCatLaunchArgs lhs, TolCatLaunchArgs rhs) {

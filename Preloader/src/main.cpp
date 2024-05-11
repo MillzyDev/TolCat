@@ -18,7 +18,7 @@ BOOL loadTolCat(TolCatLaunchArgs launchArgs) {
     std::filesystem::path dataFolder = mainModulePath.parent_path() / mainModulePath.stem().string().append("_Data");
 
     bool isClean = true;
-    if (!hasLaunchArg(launchArgs, TolCatLaunchArgs::FORCE_LOAD)) {
+    if (!hasLaunchArg(launchArgs, TolCatLaunchArgs::kForceLoad)) {
         isClean = unitySanityClean(dataFolder / "globalgamemanagers") && gameSanityClean(dataFolder / "app.info");
     }
 

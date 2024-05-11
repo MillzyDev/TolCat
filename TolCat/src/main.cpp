@@ -15,7 +15,7 @@ extern "C" [[maybe_unused]] __declspec(dllexport) void launchTolCat(TolCatLaunch
             );
 
     // Add the debug console output
-    if (hasLaunchArg(launchArgs, TolCatLaunchArgs::DEBUG_CONSOLE)) {
+    if (hasLaunchArg(launchArgs, TolCatLaunchArgs::kDebugConsole)) {
         TolCat::Logger::addLoggerOutput(std::make_unique<TolCat::LoggerConsoleOutput>());
     }
 
