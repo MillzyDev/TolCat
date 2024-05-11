@@ -86,6 +86,10 @@ namespace TolCat {
         this->logFileStream = std::ofstream(latestLog);
     }
 
+    void LoggerFileOutput::logNeutral(const std::string &timestamp, const std::string &messageSection) {
+        this->logFileStream << "[" << timestamp << "] " << messageSection << "\n";
+    }
+
     void LoggerFileOutput::logInfo(const std::string &timestamp, const std::string &nameSection, const std::string &messageSection) {
         this->logFileStream << "[" << timestamp << "] [" << nameSection << "] " << messageSection << "\n";
     }
@@ -123,6 +127,15 @@ namespace TolCat {
 
         this->conOutStream.open("CONOUT$");
         this->conOutStream << kAnsiGrey; // for unity memory stuff
+    }
+
+    void LoggerConsoleOutput::logNeutral(const std::string &timestamp, const std::string &messageSection) {
+        this->conOutStream
+            << kAnsiWhite << "["
+            << kAnsiGreen << timestamp
+            << kAnsiWhite << "] "
+            << messageSection
+            << kAnsiReset << "\n";
     }
 
     void LoggerConsoleOutput::logInfo(const std::string &timestamp, const std::string &nameSection, const std::string &messageSection) {
@@ -163,6 +176,13 @@ namespace TolCat {
     }
 
     std::map<const char *, std::unique_ptr<ILoggerOutput>> Logger::loggerOutputs;
+
+    void Logger::logNeutral(const std::string &messageSection) {
+        std::string timestamp = getTimestamp();
+        for (auto &output : loggerOutputs) {
+            output.second->logNeutral(timestamp, messageSection);
+        }
+    }
 
     void Logger::logInfo(const std::string& nameSection, const std::string &messageSection) {
         std::string timestamp = getTimestamp();

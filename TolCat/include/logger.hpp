@@ -18,6 +18,7 @@ namespace TolCat {
 
     class TOLCAT_API ILoggerOutput {
     public:
+        virtual void logNeutral(const std::string &timestamp, const std::string &messageSection);
         virtual void logInfo(const std::string &timestamp, const std::string &nameSection, const std::string &messageSection);
         virtual void logWarn(const std::string &timestamp, const std::string &nameSection, const std::string &messageSection);
         virtual void logError(const std::string &timestamp, const std::string &nameSection, const std::string &messageSection);
@@ -31,6 +32,7 @@ namespace TolCat {
 
     public:
         explicit LoggerFileOutput(const std::filesystem::path &logsDir);
+        void logNeutral(const std::string &timestamp, const std::string &messageSection) override;
         void logInfo(const std::string &timestamp, const std::string &nameSection, const std::string &messageSection) override;
         void logWarn(const std::string &timestamp, const std::string &nameSection, const std::string &messageSection) override;
         void logError(const std::string &timestamp, const std::string &nameSection, const std::string &messageSection) override;
@@ -51,6 +53,7 @@ namespace TolCat {
     public:
         LoggerConsoleOutput();
 
+        void logNeutral(const std::string &timestamp, const std::string &messageSection) override;
         void logInfo(const std::string &timestamp, const std::string &nameSection, const std::string &messageSection) override;
         void logWarn(const std::string &timestamp, const std::string &nameSection, const std::string &messageSection) override;
         void logError(const std::string &timestamp, const std::string &nameSection, const std::string &messageSection) override;
@@ -64,7 +67,8 @@ namespace TolCat {
 
         std::string sourceName;
 
-        static void logInfo(const std::string& nameSection, const std::string &messageSection);
+        static void logNeutral(const std::string &messageSection);
+        static void logInfo(const std::string &nameSection, const std::string &messageSection);
         static void logWarn(const std::string &nameSection, const std::string &messageSection);
         static void logError(const std::string &nameSection, const std::string &messageSection);
 
@@ -75,6 +79,11 @@ namespace TolCat {
         inline static void addLoggerOutput(std::unique_ptr<TLoggerOutput> loggerOutput) {
             static_assert(std::is_base_of_v<ILoggerOutput, TLoggerOutput>);
             loggerOutputs.emplace(std::make_pair(typeid(TLoggerOutput).name(), std::move(loggerOutput)));
+        }
+
+        template<typename... TArgs>
+        inline static void neutral(std::format_string<TArgs...> format, TArgs &&...args) {
+            logNeutral(std::vformat(format.get(), std::make_format_args(args...)));
         }
 
         template<typename... Args>
