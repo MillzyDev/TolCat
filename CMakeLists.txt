@@ -15,6 +15,8 @@ if (WIN32)
     set(CMAKE_SHARED_LIBRARY_PREFIX "")
 endif ()
 
+add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/Gluon")
+
 macro (RECURSE_FILES return_list filter)
     file(GLOB_RECURSE new_list ${filter})
     set(file_list "")
@@ -82,13 +84,14 @@ add_compile_definitions(
 add_library(TolCat SHARED)
 
 set_target_properties(TolCat PROPERTIES OUTPUT_NAME "TolCat")
-set_target_properties(TolCat PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin")
+set_target_properties(TolCat PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/bin")
 
 target_include_directories(
-        TolCat PUBLIC "${CMAKE_SOURCE_DIR}/TolCat/include"
+        TolCat PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/TolCat/include"
+        TolCat PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/"
 )
 
-RECURSE_FILES(tolcat_sources "${CMAKE_SOURCE_DIR}/TolCat/src/*.cpp")
+RECURSE_FILES(tolcat_sources "${CMAKE_CURRENT_SOURCE_DIR}/TolCat/src/*.cpp")
 target_sources(
         TolCat
         PRIVATE
@@ -97,11 +100,13 @@ target_sources(
 
 target_compile_definitions(TolCat PRIVATE TOLCAT_EXPORT) # should only defined for this target
 
+target_link_libraries(TolCat PRIVATE Gluon)
+
 # Preloader
 add_library(Preloader SHARED)
 
 set_target_properties(Preloader PROPERTIES OUTPUT_NAME "Preloader")
-set_target_properties(Preloader PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin")
+set_target_properties(Preloader PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/bin")
 
 if (UNITY_MAJOR_AGNOSTIC)
     target_compile_definitions(Preloader PRIVATE UNITY_MAJOR_AGNOSTIC)
@@ -118,10 +123,10 @@ if (GAME_AGNOSTIC)
 endif ()
 
 target_include_directories(
-        Preloader PRIVATE "${CMAKE_SOURCE_DIR}/Preloader/include"
+        Preloader PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/Preloader/include"
 )
 
-RECURSE_FILES(preloader_sources "${CMAKE_SOURCE_DIR}/Preloader/src/*.cpp")
+RECURSE_FILES(preloader_sources "${CMAKE_CURRENT_SOURCE_DIR}/Preloader/src/*.cpp")
 target_sources(
         Preloader
         PRIVATE
@@ -133,14 +138,14 @@ if (WIN32)
     add_library(Proxy SHARED)
 
     set_target_properties(Proxy PROPERTIES OUTPUT_NAME "version")
-    set_target_properties(Proxy PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin")
+    set_target_properties(Proxy PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/bin")
 
-    RECURSE_FILES(proxy_sources "${CMAKE_SOURCE_DIR}/Proxy/*.cpp")
+    RECURSE_FILES(proxy_sources "${CMAKE_CURRENT_SOURCE_DIR}/Proxy/*.cpp")
     target_sources(
             Proxy
             PRIVATE
             ${proxy_sources}
-            "${CMAKE_SOURCE_DIR}/Proxy/version.def"
+            "${CMAKE_CURRENT_SOURCE_DIR}/Proxy/version.def"
     )
 
     target_link_options(Proxy PRIVATE "-static")
@@ -154,7 +159,7 @@ if (WIN32)
 add_custom_command(
         TARGET TolCat
         COMMAND powershell.exe
-                -File ${CMAKE_SOURCE_DIR}/copy-to-target.ps1
+                -File ${CMAKE_CURRENT_SOURCE_DIR}/copy-to-target.ps1
                 -modName "${MOD_NAME}"
                 -targetGameDir "${GAME_PATH}"
                 -buildDir "${CMAKE_CURRENT_BINARY_DIR}"
