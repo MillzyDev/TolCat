@@ -8,6 +8,7 @@
 #include "Gluon/include/gluon_logging.hpp"
 #include "Gluon/include/xref_helpers.hpp"
 #include "Gluon/include/il2cpp_functions.hpp"
+#include "Gluon/include/exceptions.hpp"
 
 TolCat::Logger tolCatLogger_("TolCat");
 
@@ -31,6 +32,8 @@ extern "C" [[maybe_unused]] __declspec(dllexport) void launchTolCat(TolCatLaunch
             std::make_unique<TolCat::GluonLogger>()
             );
     Gluon::XrefHelpers::initialiseCapstone();
-    Gluon::Il2CppFunctions::Init();
+    Gluon::Il2CppFunctions::initialise();
     tolCatLogger_.info("Finished Gluon initialisation!");
+
+    Gluon::Exceptions::StackTraceException("Test Throw").logBacktrace();
 }

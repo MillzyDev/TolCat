@@ -18,6 +18,6 @@ namespace TolCat {
     }
 
     void GluonLogger::logError(const std::string &message) {
-        gluonLogger.warn("{}", message);
+        gluonLogger.error("{}", message);
     }
 }

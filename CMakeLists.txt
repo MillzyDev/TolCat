@@ -40,7 +40,7 @@ add_compile_definitions(
 )
 
 # IL2CPP
-set(IL2CPP_DIR "${UNITY_PATH}/Editor/Data/il2cpp/libil2cpp")
+set(IL2CPP_DIR "${UNITY_DIRECTORY}/Editor/Data/il2cpp/libil2cpp")
 if (WIN32)
     add_compile_definitions(
             IL2CPP_TARGET_CUSTOM=1
@@ -55,7 +55,7 @@ if (WIN32)
             STRICT=1
     )
 endif ()
-include_directories(IL2CPP_DIR)
+include_directories(${IL2CPP_DIR})
 
 # Mod Properties
 include(mod.cmake)

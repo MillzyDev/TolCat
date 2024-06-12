@@ -24,7 +24,8 @@ BOOL loadTolCat(TolCatLaunchArgs launchArgs) {
 
     if (isClean) {
         std::filesystem::path tolCatPath = mainModulePath.parent_path() / MOD_NAME "_Data" / "TolCat.dll";
-        HMODULE tolCatHandle = LoadLibraryExW(tolCatPath.c_str(), nullptr, LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR);
+        MessageBoxA(nullptr, std::format("TolCat exists: {}", exists(tolCatPath)).c_str(), "AAA", MB_OK);
+        HMODULE tolCatHandle = LoadLibraryExW(tolCatPath.c_str(), nullptr, LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | LOAD_LIBRARY_SEARCH_SYSTEM32);
 
         if (!tolCatHandle) {
             HANDLE_SYSTEM_ERROR(GetLastError());
