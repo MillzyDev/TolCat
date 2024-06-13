@@ -20,3 +20,7 @@ Copy-Item $preloaderSource -Destination $proxyDest -Force
 $tolCatSource = Join-Path -Path $buildDir -ChildPath "TolCat.dll"
 $tolCatDest = Join-Path -Path $targetGameDir -ChildPath $modName"_Data"
 Copy-Item $tolCatSource -Destination $tolCatDest -Force
+
+$gluonSource = Join-Path -Path $buildDir -ChildPath "Gluon/Gluon.dll"
+$gluonDest = Join-Path -Path $targetGameDir -ChildPath $modName"_Data"
+Copy-Item $gluonSource -Destination $gluonDest -Force
