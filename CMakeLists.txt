@@ -156,14 +156,30 @@ file(READ game_path.txt GAME_PATH)
 message(STATUS ${MOD_NAME})
 
 if (WIN32)
-add_custom_command(
-        TARGET TolCat
+    add_custom_command(
+        TARGET TolCat POST_BUILD
         COMMAND powershell.exe
                 -File ${CMAKE_CURRENT_SOURCE_DIR}/copy-to-target.ps1
                 -modName "${MOD_NAME}"
                 -targetGameDir "${GAME_PATH}"
                 -buildDir "${CMAKE_CURRENT_BINARY_DIR}"
-)
+    )
+    add_custom_command(
+            TARGET Preloader POST_BUILD
+            COMMAND powershell.exe
+            -File ${CMAKE_CURRENT_SOURCE_DIR}/copy-to-target.ps1
+            -modName "${MOD_NAME}"
+            -targetGameDir "${GAME_PATH}"
+            -buildDir "${CMAKE_CURRENT_BINARY_DIR}"
+    )
+    add_custom_command(
+            TARGET Proxy POST_BUILD
+            COMMAND powershell.exe
+            -File ${CMAKE_CURRENT_SOURCE_DIR}/copy-to-target.ps1
+            -modName "${MOD_NAME}"
+            -targetGameDir "${GAME_PATH}"
+            -buildDir "${CMAKE_CURRENT_BINARY_DIR}"
+    )
 else ()
 # TODO
 endif ()
