@@ -95,11 +95,11 @@ namespace TolCat {
     }
 
     void LoggerFileOutput::logWarn(const std::string &timestamp, const std::string &nameSection, const std::string &messageSection) {
-        this->logFileStream << "[" << timestamp << "] [" << nameSection << "] WARNING: " << messageSection << "\n";
+        this->logFileStream << "[" << timestamp << "] [" << nameSection << "] WARNING: " << messageSection << std::endl;
     }
 
     void LoggerFileOutput::logError(const std::string &timestamp, const std::string &nameSection, const std::string &messageSection) {
-        this->logFileStream << "[" << timestamp << "] [" << nameSection << "] ERROR: " << messageSection << "\n";
+        this->logFileStream << "[" << timestamp << "] [" << nameSection << "] ERROR: " << messageSection << std::endl;
     }
 
     LoggerConsoleOutput::LoggerConsoleOutput() {
@@ -157,7 +157,7 @@ namespace TolCat {
                 << nameSection
                 << "] WARNING: "
                 << messageSection
-                << kAnsiReset << "\n";
+                << kAnsiReset << std::endl;
     }
 
     void LoggerConsoleOutput::logError(const std::string &timestamp, const std::string &nameSection, const std::string &messageSection) {
@@ -168,7 +168,7 @@ namespace TolCat {
                 << nameSection
                 << "] ERROR: "
                 << messageSection
-                << kAnsiReset << "\n";
+                << kAnsiReset << std::endl;
     }
 
     void LoggerConsoleOutput::makeGrey() {
