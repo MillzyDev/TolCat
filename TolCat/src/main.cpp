@@ -34,6 +34,4 @@ extern "C" [[maybe_unused]] __declspec(dllexport) void launchTolCat(TolCatLaunch
     Gluon::XrefHelpers::initialiseCapstone();
     Gluon::Il2CppFunctions::initialise();
     tolCatLogger_.info("Finished Gluon initialisation!");
-
-    Gluon::Exceptions::StackTraceException("Test Throw").logBacktrace();
 }
