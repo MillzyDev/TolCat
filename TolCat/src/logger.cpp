@@ -135,7 +135,7 @@ namespace TolCat {
             << kAnsiGreen << timestamp
             << kAnsiWhite << "] "
             << messageSection
-            << kAnsiReset << "\n";
+            << kAnsiReset << std::endl;
     }
 
     void LoggerConsoleOutput::logInfo(const std::string &timestamp, const std::string &nameSection, const std::string &messageSection) {
@@ -146,7 +146,7 @@ namespace TolCat {
             << kAnsiCyan << nameSection
             << kAnsiWhite << "] "
             << messageSection
-            << kAnsiReset << "\n";
+            << kAnsiReset << std::endl;
     }
 
     void LoggerConsoleOutput::logWarn(const std::string &timestamp, const std::string &nameSection, const std::string &messageSection) {
