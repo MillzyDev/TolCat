@@ -4,7 +4,7 @@
 #include <map>
 #include <string>
 
-enum TolCatLaunchArgs : unsigned int {
+enum class TolCatLaunchArgs : unsigned int {
     kNone [[maybe_unused]] = 0,
     kForceLoad = 1 << 0,    //  --force-load          Skips all sanity checks performed by the preloader
     kDebugConsole = 1 << 1, //  --debug-console       Creates a console log window, on by default if debug build
