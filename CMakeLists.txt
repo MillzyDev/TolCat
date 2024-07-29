@@ -80,6 +80,8 @@ add_compile_definitions(
         GAME_NAME=\"${GAME_NAME}\"
 )
 
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Dobby)
+
 # TolCat Target
 add_library(TolCat SHARED)
 
@@ -89,6 +91,7 @@ set_target_properties(TolCat PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURREN
 target_include_directories(
         TolCat PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/TolCat/include"
         TolCat PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/"
+        TolCat PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/Dobby/include"
 )
 
 RECURSE_FILES(tolcat_sources "${CMAKE_CURRENT_SOURCE_DIR}/TolCat/src/*.cpp")
@@ -101,6 +104,7 @@ target_sources(
 target_compile_definitions(TolCat PRIVATE TOLCAT_EXPORT) # should only defined for this target
 
 target_link_libraries(TolCat PRIVATE Gluon)
+target_link_libraries(TolCat PRIVATE dobby)
 
 # Preloader
 add_library(Preloader SHARED)

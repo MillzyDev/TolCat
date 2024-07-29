@@ -1,3 +1,6 @@
 [submodule "Gluon"]
 	path = Gluon
 	url = https://github.com/CrabletCollective/Gluon.git
+[submodule "Dobby"]
+	path = Dobby
+	url = https://github.com/MillzyDev/Dobby.git
