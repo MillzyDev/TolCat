@@ -13,6 +13,7 @@ namespace TolCat {
         void logInfo(const std::string &message) override;
         void logWarn(const std::string &message) override;
         void logError(const std::string &message) override;
+        void logDebug(const std::string &message) override;
     };
 }
 

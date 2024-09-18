@@ -30,6 +30,12 @@ namespace TolCat {
 
     void ILoggerOutput::logError(const std::string &timestamp, const std::string &nameSection, const std::string &messageSection) {}
 
+    void ILoggerOutput::logNeutral(const std::string &timestamp, const std::string &messageSection) {}
+
+    void ILoggerOutput::logDebug(const std::string &timestamp, const std::string &nameSection, const std::string &messageSection) {}
+
+    void ILoggerOutput::flushStream() {}
+
     LoggerFileOutput::LoggerFileOutput(const std::filesystem::path &logsDir) {
         std::error_code error;
 
@@ -86,12 +92,16 @@ namespace TolCat {
         this->logFileStream = std::ofstream(latestLog);
     }
 
+    LoggerFileOutput::~LoggerFileOutput() {
+        this->logFileStream.close();
+    }
+
     void LoggerFileOutput::logNeutral(const std::string &timestamp, const std::string &messageSection) {
-        this->logFileStream << "[" << timestamp << "] " << messageSection << "\n";
+        this->logFileStream << "[" << timestamp << "] " << messageSection << std::endl;
     }
 
     void LoggerFileOutput::logInfo(const std::string &timestamp, const std::string &nameSection, const std::string &messageSection) {
-        this->logFileStream << "[" << timestamp << "] [" << nameSection << "] " << messageSection << "\n";
+        this->logFileStream << "[" << timestamp << "] [" << nameSection << "] " << messageSection << std::endl;
     }
 
     void LoggerFileOutput::logWarn(const std::string &timestamp, const std::string &nameSection, const std::string &messageSection) {
@@ -102,10 +112,18 @@ namespace TolCat {
         this->logFileStream << "[" << timestamp << "] [" << nameSection << "] ERROR: " << messageSection << std::endl;
     }
 
+    void LoggerFileOutput::logDebug(const std::string &timestamp, const std::string &nameSection, const std::string &messageSection) {
+        this->logFileStream << "[" << timestamp << "] [" << nameSection << "] DEBUG: " << messageSection << std::endl;
+    }
+
+    void LoggerFileOutput::flushStream() {
+        this->logFileStream.flush();
+    }
+
     LoggerConsoleOutput::LoggerConsoleOutput() {
         SetLastError(0);
 
-        if (!AllocConsole()) { // allocate a console
+        if (!AllocConsole()) { // allocate console
             // failing here likely means someone is trying to do something naughty
             ERROR_ABORT(GetLastError()); // noreturn
         }
@@ -125,8 +143,15 @@ namespace TolCat {
             ERROR_ABORT(GetLastError()); // noreturn
         }
 
+        if (!SetConsoleTitleA(MOD_NAME " v" MOD_VERSION " Debug Console")) {
+            ERROR_ABORT(GetLastError());
+        }
+
         this->conOutStream.open("CONOUT$");
-        this->conOutStream << kAnsiGrey; // for unity memory stuff
+    }
+
+    LoggerConsoleOutput::~LoggerConsoleOutput() {
+        this->conOutStream.close();
     }
 
     void LoggerConsoleOutput::logNeutral(const std::string &timestamp, const std::string &messageSection) {
@@ -171,6 +196,21 @@ namespace TolCat {
                 << kAnsiReset << std::endl;
     }
 
+    void LoggerConsoleOutput::logDebug(const std::string &timestamp, const std::string &nameSection, const std::string &messageSection) {
+        this->conOutStream
+                << kAnsiBlue << "["
+                << timestamp
+                << "] ["
+                << nameSection
+                << "] ERROR: "
+                << messageSection
+                << kAnsiReset << std::endl;
+    }
+
+    void LoggerConsoleOutput::flushStream() {
+        this->conOutStream.flush();
+    }
+
     void LoggerConsoleOutput::makeGrey() {
         this->conOutStream << kAnsiGrey;
     }
@@ -202,6 +242,19 @@ namespace TolCat {
         std::string timestamp = getTimestamp();
         for (auto &output : loggerOutputs) {
             output.second->logError(timestamp, nameSection, messageSection);
+        }
+    }
+
+    void Logger::logDebug(const std::string &nameSection, const std::string &messageSection) {
+        std::string timestamp = getTimestamp();
+        for (auto &output : loggerOutputs) {
+            output.second->logDebug(timestamp, nameSection, messageSection);
+        }
+    }
+
+    void Logger::flushStreams() {
+        for (auto & loggerOutput : Logger::loggerOutputs) {
+            loggerOutput.second->flushStream();
         }
     }
 

@@ -22,6 +22,8 @@ namespace TolCat {
         virtual void logInfo(const std::string &timestamp, const std::string &nameSection, const std::string &messageSection);
         virtual void logWarn(const std::string &timestamp, const std::string &nameSection, const std::string &messageSection);
         virtual void logError(const std::string &timestamp, const std::string &nameSection, const std::string &messageSection);
+        virtual void logDebug(const std::string &timestamp, const std::string &nameSection, const std::string &messageSection);
+        virtual void flushStream();
 
         virtual ~ILoggerOutput() = default;
     };
@@ -32,10 +34,14 @@ namespace TolCat {
 
     public:
         explicit LoggerFileOutput(const std::filesystem::path &logsDir);
+        ~LoggerFileOutput() override;
+
         void logNeutral(const std::string &timestamp, const std::string &messageSection) override;
         void logInfo(const std::string &timestamp, const std::string &nameSection, const std::string &messageSection) override;
         void logWarn(const std::string &timestamp, const std::string &nameSection, const std::string &messageSection) override;
         void logError(const std::string &timestamp, const std::string &nameSection, const std::string &messageSection) override;
+        void logDebug(const std::string &timestamp, const std::string &nameSection, const std::string &messageSection) override;
+        void flushStream() override;
     };
 
     class TOLCAT_API LoggerConsoleOutput final : public ILoggerOutput {
@@ -48,15 +54,19 @@ namespace TolCat {
         static constexpr const char *kAnsiWhite = "\x1b[37m";
         static constexpr const char *kAnsiGrey = "\x1b[90m";
         static constexpr const char *kAnsiYellow = "\x1b[93m";
+        static constexpr const char *kAnsiBlue = "\x1b[94m";
         static constexpr const char *kAnsiCyan = "\x1b[96m";
 
     public:
         LoggerConsoleOutput();
+        ~LoggerConsoleOutput() override;
 
         void logNeutral(const std::string &timestamp, const std::string &messageSection) override;
         void logInfo(const std::string &timestamp, const std::string &nameSection, const std::string &messageSection) override;
         void logWarn(const std::string &timestamp, const std::string &nameSection, const std::string &messageSection) override;
         void logError(const std::string &timestamp, const std::string &nameSection, const std::string &messageSection) override;
+        void logDebug(const std::string &timestamp, const std::string &nameSection, const std::string &messageSection) override;
+        void flushStream() override;
 
         void makeGrey();
     };
@@ -71,6 +81,8 @@ namespace TolCat {
         static void logInfo(const std::string &nameSection, const std::string &messageSection);
         static void logWarn(const std::string &nameSection, const std::string &messageSection);
         static void logError(const std::string &nameSection, const std::string &messageSection);
+        static void logDebug(const std::string &nameSection, const std::string &messageSection);
+        static void flushStreams();
 
     public:
         explicit Logger(std::string sourceName);
@@ -108,6 +120,16 @@ namespace TolCat {
                     this->sourceName,
                     std::vformat(format.get(), std::make_format_args(args...))
             );
+        }
+
+        template<typename... Args>
+        inline void debug(std::format_string<Args...> format, Args &&...args) {
+#ifdef DEBUG_LOGS
+            logDebug(
+                    this->sourceName,
+                    std::vformat(format.get(), std::make_format_args(args...))
+                    );
+#endif
         }
     };
 
