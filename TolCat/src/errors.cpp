@@ -24,7 +24,7 @@ namespace TolCat::Errors {
                        << "Code: 0x" << std::hex << code << "\n"
                        << message;
 
-        (void) MessageBoxA(nullptr, messageStream.str().c_str(), MOD_NAME "| TolCat Fatal Error", MB_OK | MB_ICONERROR);
+        (void) MessageBoxA(nullptr, messageStream.str().c_str(), MOD_NAME " | TolCat Fatal Error", MB_OK | MB_ICONERROR);
 
         std::abort();
     }
