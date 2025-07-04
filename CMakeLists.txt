@@ -64,6 +64,11 @@ if (WIN32)
 endif ()
 include_directories(${IL2CPP_DIR})
 
+if (EXISTS "${CMAKE_SOURCE_DIR}/codegen")
+    message(STATUS "CODEGEN FOUND")
+    include_directories("${CMAKE_CURRENT_SOURCE_DIR}/codegen/include")
+endif ()
+
 # Mod Properties
 include(mod.cmake)
 

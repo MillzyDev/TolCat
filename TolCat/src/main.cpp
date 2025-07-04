@@ -1,33 +1,83 @@
+#include <filesystem>
 #include <memory>
+
+#include <windows.h>
 
 #include "launch_flags.hpp"
 #include "logger.hpp"
 #include "files.hpp"
 #include "gluon_logger.hpp"
 
-#include "Gluon/include/backtrace_helpers.hpp"
 #include "Gluon/include/gluon_logging.hpp"
 #include "Gluon/include/xref_helpers.hpp"
 #include "Gluon/include/il2cpp_functions.hpp"
-#include "Gluon/include/exceptions.hpp"
 
 #include "Dobby/include/dobby.h"
 
+#include "GlobalNamespace/ColorChanger.hpp"
+#include "UnityEngine/Color.hpp"
+
 TolCat::Logger tolCatLogger_("TolCat");
+
+static struct MainModule {
+    void (*loadFunction)();
+} mainModule;
+
+void loadMod(MainModule *module) {
+#ifdef WIN32
+    constexpr auto kSharedExtension = ".dll";
+#elif __linux__
+    constexpr auto kSharedExtension = ".so";
+// Linux supported in the future at some point
+#else
+#error "Unsupported Platform"
+#endif
+
+    tolCatLogger_.info("--------------------------------------------------");
+    tolCatLogger_.info("|#############   MAIN MOD LOADING   #############|");
+    tolCatLogger_.info("--------------------------------------------------");
+    tolCatLogger_.info("Loading main module: {} v{}", MOD_NAME, MOD_VERSION);
+
+    std::filesystem::path modPath = TolCat::Files::getModDir() / (std::string(MOD_NAME) + kSharedExtension);
+    tolCatLogger_.info("Attempting load of: {}", modPath);
+    HMODULE modHandle = LoadLibraryExA(modPath.c_str(), nullptr, LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | LOAD_LIBRARY_SEARCH_SYSTEM32);
+
+    if (!modHandle) {
+        tolCatLogger_.error("Failed to load main module.");
+        // TODO: Error somehow
+        return;
+    }
+
+    tolCatLogger_.info("Calling into main module...");
+    module->loadFunction() = GetProcAddress(modHandle, "load");
+    tolCatLogger_.info("Main module fully loaded!");
+
+    tolCatLogger_.info("--------------------------------------------------");
+    tolCatLogger_.info("|#############   MAIN MOD LOADED!   #############|");
+    tolCatLogger_.info("--------------------------------------------------");
+}
 
 int (*initOrig)(const char *);
 int tolCatInitialise(const char *domainName) {
     tolCatLogger_.info("IL2CPP initialised in domain: {}", domainName);
 
-    int retVal = initOrig(domainName);
+    const int retVal = initOrig(domainName);
 
     int version = (*Gluon::Il2CppFunctions::globalMetadataHeaderPtr)->version;
     tolCatLogger_.info("IL2CPP global metadata header version: {}", version);
 
+#ifdef MOD_ENTRY_POINT
+    loadMod(&mainModule);
+
+    if (mainModule.loadFunction) {
+        mainModule.loadFunction();
+    }
+#endif
+
     return retVal;
 }
 
-extern "C" [[maybe_unused]] __declspec(dllexport) void launchTolCat(TolCatLaunchArgs launchArgs) {
+extern "C" [[maybe_unused]] TOLCAT_API void launchTolCat(TolCatLaunchArgs launchArgs) {
     TolCat::Files::createLogsDir();
 
     // Add the log file output
@@ -50,9 +100,9 @@ extern "C" [[maybe_unused]] __declspec(dllexport) void launchTolCat(TolCatLaunch
     Gluon::Il2CppFunctions::initialise();
     tolCatLogger_.info("Finished Gluon initialisation!");
 
-    tolCatLogger_.info("Class::Init Address: {:p}", reinterpret_cast<void *>(Gluon::Il2CppFunctions::il2cpp_Class_Init));
-    auto fn = reinterpret_cast<uint8_t *>(Gluon::Il2CppFunctions::il2cpp_Class_Init);
-    tolCatLogger_.info("Class::Init First Bytes: {:x} {:x} {:x} {:x} {:x} {:x} {:x} {:x} {:x} {:x} {:x} {:x}", fn[0], fn[1], fn[2], fn[3], fn[4], fn[5], fn[6], fn[7], fn[8], fn[9], fn[10], fn[11]);
+    GlobalNamespace::ColorChanger *colorChanger = nullptr; // just for demo purposes
+    UnityEngine::Material *material = colorChanger->_material;
+    UnityEngine::Color color = material->color;
 
     (void)DobbyHook(reinterpret_cast<void *>(Gluon::Il2CppFunctions::il2cpp_init),
                     reinterpret_cast<void *>(tolCatInitialise), reinterpret_cast<void **>(&initOrig));
