@@ -17,7 +17,7 @@ bool unitySanityClean(const std::filesystem::path& globalGameManagersPath) {
 
     std::getline(unityVersionStream, unityMajor, '.');
     std::getline(unityVersionStream, unityMinor, '.');
-    std::getline(unityVersionStream, unityPatch, '.');
+    std::getline(unityVersionStream, unityPatch, 'f');
 
     bool isClean = true;
 
@@ -27,8 +27,8 @@ bool unitySanityClean(const std::filesystem::path& globalGameManagersPath) {
 #ifndef UNITY_MINOR_AGNOSTIC
     isClean &= (unityMinor == UNITY_MINOR);
 #endif
-#ifndef UNITY_MAJOR_AGNOSTIC
-    isClean &= (unityPatch == UNITY_PATCH);
+#ifndef UNITY_PATCH_AGNOSTIC
+    isClean &= (unityPatch == UNITY_PATCH UNITY);
 #endif
 
     return isClean;
