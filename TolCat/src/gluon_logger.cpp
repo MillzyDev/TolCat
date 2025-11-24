@@ -5,7 +5,7 @@
 namespace TolCat {
     TolCat::Logger GluonLogger::gluonLogger("Gluon");
 
-    void GluonLogger::logNeutral(const std::string &message) {
+    void GluonLogger::log(const std::string &message) {
         TolCat::Logger::neutral("{}", message);
     }
 
@@ -13,7 +13,7 @@ namespace TolCat {
         gluonLogger.info("{}", message);
     }
 
-    void GluonLogger::logWarn(const std::string &message) {
+    void GluonLogger::logWarning(const std::string &message) {
         gluonLogger.warn("{}", message);
     }
 
