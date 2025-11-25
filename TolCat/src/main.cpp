@@ -48,7 +48,6 @@ extern "C" [[maybe_unused]] TOLCAT_API void launchTolCat(TolCatLaunchArgs launch
             std::make_unique<TolCat::LoggerFileOutput>(TolCat::Files::getLogsDir())
             );
 
-    // TODO: Console launched output
     // Add the debug console output
     if (hasLaunchArg(launchArgs, TolCatLaunchArgs::kDebugConsole)) {
         TolCat::Logger::addLoggerOutput(std::make_unique<TolCat::LoggerConsoleOutput>());
