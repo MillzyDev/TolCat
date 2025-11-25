@@ -5,7 +5,9 @@
 #include <fstream>
 #include <map>
 #include <memory>
+#include <ranges>
 #include <set>
+#include <thread>
 #include <utility>
 
 #include <windows.h>
@@ -16,7 +18,7 @@
 namespace TolCat {
 
     std::string getTimestamp() {
-        std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();
+        const std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();
         std::string timestamp = std::format(
                 "{0:%H:%M:%S}",
                 std::chrono::time_point_cast<std::chrono::milliseconds>(now)
@@ -24,15 +26,15 @@ namespace TolCat {
         return timestamp;
     }
 
-    void ILoggerOutput::logInfo(const std::string &timestamp, const std::string &nameSection, const std::string &messageSection) {}
+    void ILoggerOutput::logInfo(const std::string &timestamp, const std::string &nameSection, std::string_view fmt, std::format_args args) {}
 
-    void ILoggerOutput::logWarn(const std::string &timestamp, const std::string &nameSection, const std::string &messageSection) {}
+    void ILoggerOutput::logWarn(const std::string &timestamp, const std::string &nameSection, std::string_view fmt, std::format_args args) {}
 
-    void ILoggerOutput::logError(const std::string &timestamp, const std::string &nameSection, const std::string &messageSection) {}
+    void ILoggerOutput::logError(const std::string &timestamp, const std::string &nameSection, std::string_view fmt, std::format_args args) {}
 
-    void ILoggerOutput::logNeutral(const std::string &timestamp, const std::string &messageSection) {}
+    void ILoggerOutput::logNeutral(const std::string &timestamp, std::string_view fmt, std::format_args args) {}
 
-    void ILoggerOutput::logDebug(const std::string &timestamp, const std::string &nameSection, const std::string &messageSection) {}
+    void ILoggerOutput::logDebug(const std::string &timestamp, const std::string &nameSection, std::string_view fmt, std::format_args args) {}
 
     void ILoggerOutput::flushStream() {}
 
@@ -60,9 +62,7 @@ namespace TolCat {
         auto it = std::filesystem::directory_iterator(logsDir);
         std::set<std::filesystem::path> logs;
         for (const std::filesystem::directory_entry& entry : it) {
-            const std::filesystem::path& entryPath = entry.path();
-
-            if (entryPath.has_extension()) {
+            if (const std::filesystem::path& entryPath = entry.path(); entryPath.has_extension()) {
                 if (entryPath.extension() == ".log") {
                     logs.insert(entryPath);
                 }
@@ -70,8 +70,7 @@ namespace TolCat {
         }
 
         // in alphabetical order, oldest files are first
-        size_t size = logs.size();
-        if (size > 10) {
+        if (size_t size = logs.size(); size > 10) {
             size_t deleteCount = size - 10;
             for (const std::filesystem::path& oldestLog : logs) {
                 if (!deleteCount) {
@@ -96,24 +95,24 @@ namespace TolCat {
         this->logFileStream.close();
     }
 
-    void LoggerFileOutput::logNeutral(const std::string &timestamp, const std::string &messageSection) {
-        this->logFileStream << "[" << timestamp << "] " << messageSection << std::endl;
+    void LoggerFileOutput::logNeutral(const std::string &timestamp, const std::string_view fmt, const std::format_args args) {
+        this->logFileStream << "[" << timestamp << "] " << std::vformat(fmt, args) << std::endl;
     }
 
-    void LoggerFileOutput::logInfo(const std::string &timestamp, const std::string &nameSection, const std::string &messageSection) {
-        this->logFileStream << "[" << timestamp << "] [" << nameSection << "] " << messageSection << std::endl;
+    void LoggerFileOutput::logInfo(const std::string &timestamp, const std::string &nameSection, const std::string_view fmt, const std::format_args args) {
+        this->logFileStream << "[" << timestamp << "] [" << nameSection << "] " << std::vformat(fmt, args) << std::endl;
     }
 
-    void LoggerFileOutput::logWarn(const std::string &timestamp, const std::string &nameSection, const std::string &messageSection) {
-        this->logFileStream << "[" << timestamp << "] [" << nameSection << "] WARNING: " << messageSection << std::endl;
+    void LoggerFileOutput::logWarn(const std::string &timestamp, const std::string &nameSection, const std::string_view fmt, const std::format_args args) {
+        this->logFileStream << "[" << timestamp << "] [" << nameSection << "] WARNING: " << std::vformat(fmt, args) << std::endl;
     }
 
-    void LoggerFileOutput::logError(const std::string &timestamp, const std::string &nameSection, const std::string &messageSection) {
-        this->logFileStream << "[" << timestamp << "] [" << nameSection << "] ERROR: " << messageSection << std::endl;
+    void LoggerFileOutput::logError(const std::string &timestamp, const std::string &nameSection, const std::string_view fmt, const std::format_args args) {
+        this->logFileStream << "[" << timestamp << "] [" << nameSection << "] ERROR: " << std::vformat(fmt, args) << std::endl;
     }
 
-    void LoggerFileOutput::logDebug(const std::string &timestamp, const std::string &nameSection, const std::string &messageSection) {
-        this->logFileStream << "[" << timestamp << "] [" << nameSection << "] DEBUG: " << messageSection << std::endl;
+    void LoggerFileOutput::logDebug(const std::string &timestamp, const std::string &nameSection, const std::string_view fmt, const std::format_args args) {
+        this->logFileStream << "[" << timestamp << "] [" << nameSection << "] DEBUG: " << std::vformat(fmt, args) << std::endl;
     }
 
     void LoggerFileOutput::flushStream() {
@@ -154,56 +153,56 @@ namespace TolCat {
         this->conOutStream.close();
     }
 
-    void LoggerConsoleOutput::logNeutral(const std::string &timestamp, const std::string &messageSection) {
+    void LoggerConsoleOutput::logNeutral(const std::string &timestamp, const std::string_view fmt, const std::format_args args) {
         this->conOutStream
             << kAnsiWhite << "["
             << kAnsiGreen << timestamp
             << kAnsiWhite << "] "
-            << messageSection
+            << std::vformat(fmt, args)
             << kAnsiReset << std::endl;
     }
 
-    void LoggerConsoleOutput::logInfo(const std::string &timestamp, const std::string &nameSection, const std::string &messageSection) {
+    void LoggerConsoleOutput::logInfo(const std::string &timestamp, const std::string &nameSection, const std::string_view fmt, const std::format_args args) {
         this->conOutStream
             << kAnsiWhite << "["
             << kAnsiGreen << timestamp
             << kAnsiWhite << "] ["
             << kAnsiCyan << nameSection
             << kAnsiWhite << "] "
-            << messageSection
+            << std::vformat(fmt, args)
             << kAnsiReset << std::endl;
     }
 
-    void LoggerConsoleOutput::logWarn(const std::string &timestamp, const std::string &nameSection, const std::string &messageSection) {
+    void LoggerConsoleOutput::logWarn(const std::string &timestamp, const std::string &nameSection, const std::string_view fmt, const std::format_args args) {
         this->conOutStream
                 << kAnsiYellow << "["
                 << timestamp
                 << "] ["
                 << nameSection
                 << "] WARNING: "
-                << messageSection
+                << std::vformat(fmt, args)
                 << kAnsiReset << std::endl;
     }
 
-    void LoggerConsoleOutput::logError(const std::string &timestamp, const std::string &nameSection, const std::string &messageSection) {
+    void LoggerConsoleOutput::logError(const std::string &timestamp, const std::string &nameSection, const std::string_view fmt, const std::format_args args) {
         this->conOutStream
                 << kAnsiRed << "["
                 << timestamp
                 << "] ["
                 << nameSection
                 << "] ERROR: "
-                << messageSection
+                << std::vformat(fmt, args)
                 << kAnsiReset << std::endl;
     }
 
-    void LoggerConsoleOutput::logDebug(const std::string &timestamp, const std::string &nameSection, const std::string &messageSection) {
+    void LoggerConsoleOutput::logDebug(const std::string &timestamp, const std::string &nameSection, const std::string_view fmt, const std::format_args args) {
         this->conOutStream
                 << kAnsiBlue << "["
                 << timestamp
                 << "] ["
                 << nameSection
                 << "] ERROR: "
-                << messageSection
+                << std::vformat(fmt, args)
                 << kAnsiReset << std::endl;
     }
 
@@ -215,51 +214,109 @@ namespace TolCat {
         this->conOutStream << kAnsiGrey;
     }
 
-    std::map<const char *, std::unique_ptr<ILoggerOutput>> Logger::loggerOutputs;
+    std::map<const char *, std::unique_ptr<ILoggerOutput>> Logger::s_loggerOutputs;
 
-    void Logger::logNeutral(const std::string &messageSection) {
+    std::thread Logger::s_workerThread;
+    std::condition_variable Logger::s_condition;
+    std::atomic<bool> Logger::s_exitCondition;
+    std::atomic<std::size_t> Logger::s_jobsPending;
+    std::queue<std::function<void ()>> Logger::s_jobQueue;
+    std::mutex Logger::s_mutex;
+
+    void Logger::neutralFormat(std::string_view fmt, std::format_args args) {
         std::string timestamp = getTimestamp();
-        for (auto &output : loggerOutputs) {
-            output.second->logNeutral(timestamp, messageSection);
+        for (auto &val: s_loggerOutputs | std::views::values) {
+            std::function<void()> f = std::bind(&TolCat::ILoggerOutput::logNeutral, val.get(), timestamp, fmt, args);
+            queueJob(std::move(f));
         }
     }
 
-    void Logger::logInfo(const std::string& nameSection, const std::string &messageSection) {
+    void Logger::infoFormat(std::string_view fmt, std::format_args args) {
         std::string timestamp = getTimestamp();
-        for (auto &output : loggerOutputs) {
-            output.second->logInfo(timestamp, nameSection, messageSection);
+        for (auto &val: s_loggerOutputs | std::views::values) {
+            std::function<void()> f = std::bind(&TolCat::ILoggerOutput::logInfo, val.get(), timestamp, std::ref(this->_sourceName), fmt, args);
+            queueJob(std::move(f));
         }
     }
 
-    void Logger::logWarn(const std::string &nameSection, const std::string &messageSection) {
+    void Logger::warnFormat(std::string_view fmt, std::format_args args) {
         std::string timestamp = getTimestamp();
-        for (auto &output : loggerOutputs) {
-            output.second->logWarn(timestamp, nameSection, messageSection);
+        for (auto &val: s_loggerOutputs | std::views::values) {
+            std::function<void()> f = std::bind(&TolCat::ILoggerOutput::logWarn, val.get(), timestamp, std::ref(this->_sourceName), fmt, args);
+            queueJob(std::move(f));
         }
     }
 
-    void Logger::logError(const std::string &nameSection, const std::string &messageSection) {
+    void Logger::errorFormat(std::string_view fmt, std::format_args args) {
         std::string timestamp = getTimestamp();
-        for (auto &output : loggerOutputs) {
-            output.second->logError(timestamp, nameSection, messageSection);
+        for (auto &val: s_loggerOutputs | std::views::values) {
+            std::function<void()> f = std::bind(&TolCat::ILoggerOutput::logError, val.get(), timestamp, std::ref(this->_sourceName), fmt, args);
+            queueJob(std::move(f));
         }
     }
 
-    void Logger::logDebug(const std::string &nameSection, const std::string &messageSection) {
+    void Logger::debugFormat(std::string_view fmt, std::format_args args) {
         std::string timestamp = getTimestamp();
-        for (auto &output : loggerOutputs) {
-            output.second->logDebug(timestamp, nameSection, messageSection);
+        for (auto &val: s_loggerOutputs | std::views::values) {
+            std::function<void()> f = std::bind(&TolCat::ILoggerOutput::logError, val.get(), timestamp, std::ref(this->_sourceName), fmt, args);
+            queueJob(std::move(f));
         }
     }
 
     void Logger::flushStreams() {
-        for (auto & loggerOutput : Logger::loggerOutputs) {
-            loggerOutput.second->flushStream();
+        for (const auto &val: Logger::s_loggerOutputs | std::views::values) {
+            val->flushStream();
         }
     }
 
-    Logger::Logger(std::string sourceName) {
-        this->sourceName = std::move(sourceName);
+    void Logger::queueJob(std::function<void()> f) {
+        {
+            std::lock_guard lock(s_mutex);
+            s_jobQueue.push(std::move(f));
+            ++s_jobsPending;
+        }
+        s_condition.notify_one();
     }
 
+    void Logger::worker() {
+        while (!s_exitCondition) {
+            work();
+        }
+    }
+
+    void Logger::work() {
+        std::function<void()> f;
+
+        {
+            std::unique_lock lock(s_mutex);
+
+            while (s_jobsPending == 0) {
+                s_condition.wait(lock);
+            }
+
+            if (s_exitCondition) {
+                return;
+            }
+
+            f = std::move(s_jobQueue.front());
+            s_jobQueue.pop();
+            --s_jobsPending;
+        }
+
+        f();
+    }
+
+    Logger::Logger(std::string sourceName) {
+        this->_sourceName = std::move(sourceName);
+    }
+
+    void Logger::beginLog() {
+        s_exitCondition = false;
+        s_workerThread = std::thread(Logger::worker);
+    }
+
+    void Logger::endLog() {
+        s_exitCondition = true;
+        s_workerThread.join();
+    }
 } // namespace TolCat

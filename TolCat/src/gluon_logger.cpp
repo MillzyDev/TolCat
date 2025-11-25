@@ -5,23 +5,23 @@
 namespace TolCat {
     TolCat::Logger GluonLogger::gluonLogger("Gluon");
 
-    void GluonLogger::log(const std::string &message) {
-        TolCat::Logger::neutral("{}", message);
+    void GluonLogger::log(std::string_view fmt, std::format_args args) {
+        gluonLogger.neutralFormat(fmt, args);
     }
 
-    void GluonLogger::logInfo(const std::string &message) {
-        gluonLogger.info("{}", message);
+    void GluonLogger::logInfo(std::string_view fmt, std::format_args args) {
+        gluonLogger.infoFormat(fmt, args);
     }
 
-    void GluonLogger::logWarning(const std::string &message) {
-        gluonLogger.warn("{}", message);
+    void GluonLogger::logWarning(std::string_view fmt, std::format_args args) {
+        gluonLogger.warnFormat(fmt, args);
     }
 
-    void GluonLogger::logError(const std::string &message) {
-        gluonLogger.error("{}", message);
+    void GluonLogger::logError(std::string_view fmt, std::format_args args) {
+        gluonLogger.errorFormat(fmt, args);
     }
 
-    void GluonLogger::logDebug(const std::string &message) {
-        gluonLogger.debug("{}", message);
+    void GluonLogger::logDebug(std::string_view fmt, std::format_args args) {
+        gluonLogger.debugFormat(fmt, args);
     }
-}
+} // TolCat

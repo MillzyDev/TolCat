@@ -9,11 +9,11 @@ namespace TolCat {
     private:
         static TolCat::Logger gluonLogger;
     public:
-        void log(const std::string &message) override;
-        void logInfo(const std::string &message) override;
-        void logWarning(const std::string &message) override;
-        void logError(const std::string &message) override;
-        void logDebug(const std::string &message) override;
+        void log(std::string_view fmt, std::format_args args) override;
+        void logInfo(std::string_view fmt, std::format_args args) override;
+        void logWarning(std::string_view fmt, std::format_args argse) override;
+        void logError(std::string_view fmt, std::format_args args) override;
+        void logDebug(std::string_view fmt, std::format_args args) override;
     };
 }
 

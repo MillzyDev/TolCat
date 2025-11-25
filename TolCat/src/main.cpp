@@ -54,6 +54,8 @@ extern "C" [[maybe_unused]] TOLCAT_API void launchTolCat(TolCatLaunchArgs launch
         TolCat::Logger::addLoggerOutput(std::make_unique<TolCat::LoggerConsoleOutput>());
     }
 
+    TolCat::Logger::beginLog(); // TODO: End log at some point
+
     tolCatLogger_.info("Logger initialised.");
 
     tolCatLogger_.info("Initialising Gluon...");
@@ -61,9 +63,10 @@ extern "C" [[maybe_unused]] TOLCAT_API void launchTolCat(TolCatLaunchArgs launch
             std::make_unique<TolCat::GluonLogger>()
             );
     //Gluon::XrefHelpers::initialiseCapstone();
-    //Gluon::Il2CppFunctions::initialise();
+    Gluon::Il2CppFunctions::initialise();
     tolCatLogger_.info("Finished Gluon initialisation!");
 
+    // TODO: Check hook was successful
     (void)DobbyHook(reinterpret_cast<void *>(Gluon::Il2CppFunctions::il2cpp_init),
                     reinterpret_cast<void *>(tolCatInitialise), reinterpret_cast<void **>(&initOrig));
 }
