@@ -5,9 +5,13 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON) # better intellisense
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED 20)
+set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 
 add_compile_options(-fdeclspec) # dllexport
-add_compile_options(-O3)
+
+if (NOT ${CMAKE_BUILD_TYPE} EQUAL "Debug")
+    add_compile_options(-O3)
+endif ()
 
 set(NO_MOD_MODE ON)
 
