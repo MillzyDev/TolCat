@@ -7,7 +7,7 @@
 
 #include "errors.hpp"
 
-namespace TolCat::Files {
+namespace TolCat {
     constexpr auto kModData = MOD_NAME "_Data";
 
     std::filesystem::path getBaseDir() {

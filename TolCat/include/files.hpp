@@ -5,7 +5,7 @@
 
 #include <filesystem>
 
-namespace TolCat::Files {
+namespace TolCat {
     /**
      * Constructs and gets the path to the target game's installation directory.
      * @return The path to the target game's installation directory.
