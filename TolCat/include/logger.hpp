@@ -1,152 +1,80 @@
 #ifndef TOLCAT_LOGGER_H_
 #define TOLCAT_LOGGER_H_
 
-#include "tolcat_config.hpp"
-
-#include <windows.h>
-
+#include <cstdint>
 #include <filesystem>
-#include <format>
 #include <fstream>
-#include <map>
 #include <memory>
 #include <string>
-#include <thread>
-#include <type_traits>
+
+#include "launch_flags.hpp"
+#include "tolcat_config.hpp"
+
+#include "spdlog/spdlog.h"
+#include "spdlog/sinks/basic_file_sink.h"
+#include "spdlog/sinks/ostream_sink.h"
+#include "spdlog/sinks/sink.h"
+#include "spdlog/sinks/stdout_color_sinks.h"
+#include "spdlog/sinks/wincolor_sink.h"
 
 namespace TolCat {
-    TOLCAT_API std::string getTimestamp();
+    constexpr auto kLatestLogName = "_Latest.log";
+    constexpr std::uint32_t kMaxArchivedLogs = 10;
 
-    class TOLCAT_API ILoggerOutput {
-    public:
-        virtual void logNeutral(const std::string &timestamp, std::string_view fmt, std::format_args args);
-        virtual void logInfo(const std::string &timestamp, const std::string &nameSection, std::string_view fmt, std::format_args args);
-        virtual void logWarn(const std::string &timestamp, const std::string &nameSection, std::string_view fmt, std::format_args args);
-        virtual void logError(const std::string &timestamp, const std::string &nameSection, std::string_view fmt, std::format_args args);
-        virtual void logDebug(const std::string &timestamp, const std::string &nameSection, std::string_view fmt, std::format_args args);
-        virtual void flushStream();
+    /**
+     * Lazily gets the logger for TolCat (unconfigured by default; no sinks)
+     * @note This should NOT be used for creating your own logger.
+     * @return A shared pointer to the initialised logger
+     */
+    TOLCAT_API std::shared_ptr<spdlog::logger> getLogger();
 
-        virtual ~ILoggerOutput() = default;
-    };
+    /**
+     * Renames the latest log file to be respective of when it was last written to.
+     * @param logDirectory The logs directory containing the latest
+     * @param log The file name of the log to archive
+     */
+    TOLCAT_API void archiveLog(const std::filesystem::path &logDirectory, std::string_view log = kLatestLogName);
 
-    class TOLCAT_API LoggerFileOutput final : public ILoggerOutput {
+    /**
+     * Deletes the oldest log files in a directory until the youngest of a specified amount remain
+     * @param logDirectory The directory containing log files to delete
+     * @param maxLogs Maximum number of log files permitted in the directory
+     */
+    TOLCAT_API void deleteOldLogs(const std::filesystem::path &logDirectory, std::uint32_t maxLogs = kMaxArchivedLogs);
+
+    /**
+     * Allocates a console for this process
+     */
+    TOLCAT_API void createConsole();
+
+    /**
+     * Binds stdout to the allocated console for this process
+     */
+    TOLCAT_API void bindConsole();
+
+    /**
+     * Helper class for creating logger sinks
+     */
+    class TOLCAT_API SinkMaker {
     private:
-        std::ofstream logFileStream;
+        std::filesystem::path logDirectory_;
+        std::string_view logFileName_;
 
     public:
-        explicit LoggerFileOutput(const std::filesystem::path &logsDir);
-        ~LoggerFileOutput() override;
+        explicit SinkMaker(const std::filesystem::path &logDirectory, std::string_view logFileName = kLatestLogName);
 
-        void logNeutral(const std::string &timestamp, std::string_view fmt, std::format_args args) override;
-        void logInfo(const std::string &timestamp, const std::string &nameSection, std::string_view fmt, std::format_args args) override;
-        void logWarn(const std::string &timestamp, const std::string &nameSection, std::string_view fmt, std::format_args args) override;
-        void logError(const std::string &timestamp, const std::string &nameSection, std::string_view fmt, std::format_args args) override;
-        void logDebug(const std::string &timestamp, const std::string &nameSection, std::string_view fmt, std::format_args args) override;
-        void flushStream() override;
+        /**
+         * Creates a logger sink instance for a stream to a log file
+         * @return Shared pointer instance to the created sink
+         */
+        std::shared_ptr<spdlog::sinks::basic_file_sink_st> createFileSink() const;
+
+        /**
+         * Creates a logger sink instance for a stream to CONOUT$
+         * @return Shared pointer instance to the created sink
+         */
+        std::shared_ptr<spdlog::sinks::stdout_color_sink_st> createConsoleSink() const;
     };
-
-    class TOLCAT_API LoggerConsoleOutput final : public ILoggerOutput {
-    private:
-        std::ofstream conOutStream;
-
-        static constexpr auto kAnsiReset = "\x1b[0m";
-        static constexpr auto kAnsiRed = "\x1b[31m";
-        static constexpr auto kAnsiGreen = "\x1b[32m";
-        static constexpr auto kAnsiWhite = "\x1b[37m";
-        static constexpr auto kAnsiGrey = "\x1b[90m";
-        static constexpr auto kAnsiYellow = "\x1b[93m";
-        static constexpr auto kAnsiBlue = "\x1b[94m";
-        static constexpr auto kAnsiCyan = "\x1b[96m";
-
-    public:
-        LoggerConsoleOutput();
-        ~LoggerConsoleOutput() override;
-
-        void logNeutral(const std::string &timestamp, std::string_view fmt, std::format_args args) override;
-        void logInfo(const std::string &timestamp, const std::string &nameSection, std::string_view fmt, std::format_args args) override;
-        void logWarn(const std::string &timestamp, const std::string &nameSection, std::string_view fmt, std::format_args args) override;
-        void logError(const std::string &timestamp, const std::string &nameSection, std::string_view fmt, std::format_args args) override;
-        void logDebug(const std::string &timestamp, const std::string &nameSection, std::string_view fmt, std::format_args args) override;
-        void flushStream() override;
-
-        void makeGrey();
-    };
-
-    class TOLCAT_API Logger final {
-    private:
-        static std::map<const char *,std::unique_ptr<ILoggerOutput>> s_loggerOutputs;
-
-        std::string _sourceName;
-
-        static void flushStreams();
-
-        // TODO: Move worker into own class
-        static std::thread s_workerThread;
-        static std::condition_variable s_condition;
-        static std::atomic<bool> s_exitCondition;
-        static std::atomic<std::size_t> s_jobsPending;
-        static std::queue<std::function<void()>> s_jobQueue;
-        static std::mutex s_mutex;
-
-        static void queueJob(std::function<void()> f);
-        static void worker();
-        static void work();
-
-    public:
-        explicit Logger(std::string sourceName);
-
-        static void beginLog();
-        static void endLog();
-
-        void neutralFormat(std::string_view fmt, std::format_args args);
-        void infoFormat(std::string_view fmt, std::format_args args);
-        void warnFormat(std::string_view fmt, std::format_args args);
-        void errorFormat(std::string_view fmt, std::format_args args);
-        void debugFormat(std::string_view fmt, std::format_args args);
-
-        template<class TLoggerOutput>
-        inline static void addLoggerOutput(std::unique_ptr<TLoggerOutput> loggerOutput) {
-            static_assert(std::is_base_of_v<ILoggerOutput, TLoggerOutput>);
-            s_loggerOutputs.emplace(std::make_pair(typeid(TLoggerOutput).name(), std::move(loggerOutput)));
-        }
-
-        template<typename... TArgs>
-        inline void neutral(std::format_string<TArgs...> format, TArgs &&...args) {
-            neutralFormat(format.get(), std::make_format_args(args...));
-        }
-
-        template<typename... Args>
-        inline void info(std::format_string<Args...> format, Args &&...args) {
-            infoFormat(
-                format.get(), std::make_format_args(args...)
-            );
-        }
-
-        template<typename... Args>
-        inline void warn(std::format_string<Args...> format, Args &&...args) {
-            warnFormat(
-                    format.get(), std::make_format_args(args...)
-            );
-        }
-
-        template<typename... Args>
-        inline void error(std::format_string<Args...> format, Args &&...args) {
-            errorFormat(
-                    format.get(), std::make_format_args(args...)
-            );
-        }
-
-        template<typename... Args>
-        inline void debug(std::format_string<Args...> format, Args &&...args) {
-#ifdef DEBUG_LOGS
-            debugFormat(
-                format.get(), std::make_format_args(args...)
-            );
-#endif
-        }
-    };
-
-    extern Logger tolCatLogger_;
 } // TolCat
 
 #endif // TOLCAT_LOGGER_H_
