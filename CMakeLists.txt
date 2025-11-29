@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED 20)
 set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 
-add_compile_options(-fdeclspec) # dllexport
+add_link_options(-fdeclspec) # dllexport
 
 if (NOT ${CMAKE_BUILD_TYPE} EQUAL "Debug")
     add_compile_options(-O3)
@@ -68,11 +68,6 @@ if (WIN32)
 endif ()
 include_directories(${IL2CPP_DIR})
 
-if (EXISTS "${CMAKE_SOURCE_DIR}/codegen")
-    message(STATUS "CODEGEN FOUND")
-    include_directories("${CMAKE_CURRENT_SOURCE_DIR}/codegen/include")
-endif ()
-
 # Mod Properties
 include(mod.cmake)
 
@@ -98,6 +93,10 @@ add_compile_definitions(
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Dobby)
 
+set(SPDLOG_BUILD_SHARED ON)
+set(SPDLOG_BUILD_PIC ON)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/spdlog)
+
 # TolCat Target
 add_library(TolCat SHARED)
 
@@ -108,6 +107,7 @@ target_include_directories(
         TolCat PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/TolCat/include"
         TolCat PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/"
         TolCat PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/Dobby/include"
+        TolCat PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/spdlog/include"
 )
 
 RECURSE_FILES(tolcat_sources "${CMAKE_CURRENT_SOURCE_DIR}/TolCat/src/*.cpp")
@@ -121,6 +121,7 @@ target_compile_definitions(TolCat PRIVATE TOLCAT_EXPORT) # should only defined f
 
 target_link_libraries(TolCat PRIVATE Gluon)
 target_link_libraries(TolCat PRIVATE dobby)
+target_link_libraries(TolCat PRIVATE spdlog::spdlog)
 
 # Preloader
 add_library(Preloader SHARED)
