@@ -6,7 +6,6 @@
 #include "launch_flags.hpp"
 #include "logger.hpp"
 #include "files.hpp"
-#include "gluon_logger.hpp"
 
 #include "Gluon/include/gluon_logging.hpp"
 #include "Gluon/include/tracers.hpp"
@@ -14,7 +13,7 @@
 
 #include "Dobby/include/dobby.h"
 
-TolCat::Logger tolCatLogger_("TolCat");
+#include "spdlog/spdlog.h"
 
 static struct MainModule {
     void (*loadFunction)();
@@ -22,11 +21,11 @@ static struct MainModule {
 
 int (*initOrig)(const char *);
 int tolCatInitialise(const char *domainName) {
-    tolCatLogger_.info("IL2CPP initialised in domain: {}", domainName);
+    TolCat::getLogger()->info("IL2CPP initialised in domain: {}", domainName);
 
     const int retVal = initOrig(domainName);
 
-    //int version = (*Gluon::Il2CppFunctions::globalMetadataHeaderPtr)->version;
+    // version = (*Gluon::Il2CppFunctions::globalMetadataHeaderPtr)->version;
     //tolCatLogger_.info("IL2CPP global metadata header version: {}", version);
 
 #ifdef MOD_ENTRY_POINT
@@ -40,30 +39,38 @@ int tolCatInitialise(const char *domainName) {
     return retVal;
 }
 
-extern "C" [[maybe_unused]] TOLCAT_API void launchTolCat(TolCatLaunchArgs launchArgs) {
-    TolCat::Files::createLogsDir();
+void initLogEnvironment(const TolCatLaunchArgs launchArgs) {
+    TolCat::createLogsDir();
 
-    // Add the log file output
-    TolCat::Logger::addLoggerOutput(
-            std::make_unique<TolCat::LoggerFileOutput>(TolCat::Files::getLogsDir())
-            );
+    TolCat::archiveLog(TolCat::getLogsDir());
+    TolCat::deleteOldLogs(TolCat::getLogsDir());
 
-    // Add the debug console output
     if (hasLaunchArg(launchArgs, TolCatLaunchArgs::kDebugConsole)) {
-        TolCat::Logger::addLoggerOutput(std::make_unique<TolCat::LoggerConsoleOutput>());
+        TolCat::createConsole();
+        TolCat::bindConsole();
     }
+}
 
-    TolCat::Logger::beginLog(); // TODO: End log at some point
+void initLogger(std::shared_ptr<spdlog::logger> logger, const TolCatLaunchArgs launchArgs) {
+    const auto sinkMaker = TolCat::SinkMaker(TolCat::getLogsDir());
+    TolCat::getLogger()->sinks().push_back(std::move(sinkMaker.createFileSink()));
 
-    tolCatLogger_.info("Logger initialised.");
+    if (hasLaunchArg(launchArgs, TolCatLaunchArgs::kDebugConsole)) {
+        TolCat::getLogger()->sinks().push_back(std::move(sinkMaker.createConsoleSink()));
+    }
+}
 
-    tolCatLogger_.info("Initialising Gluon...");
-    Gluon::Logger::init(
-            std::make_unique<TolCat::GluonLogger>()
-            );
-    //Gluon::XrefHelpers::initialiseCapstone();
+extern "C" [[maybe_unused]] TOLCAT_API void launchTolCat(TolCatLaunchArgs launchArgs) {
+    initLogEnvironment(launchArgs);
+    spdlog::info("Initalised log environment.");
+
+    initLogger(TolCat::getLogger(), launchArgs);
+    TolCat::getLogger()->info("TolCat logger initialised.");
+
+    TolCat::getLogger()->info("Initialising Gluon...");
+
     Gluon::Il2CppFunctions::initialise();
-    tolCatLogger_.info("Finished Gluon initialisation!");
+    TolCat::getLogger()->info("Finished Gluon initialisation!");
 
     // TODO: Check hook was successful
     (void)DobbyHook(reinterpret_cast<void *>(Gluon::Il2CppFunctions::il2cpp_init),
