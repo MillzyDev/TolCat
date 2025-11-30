@@ -111,11 +111,13 @@ namespace TolCat {
     }
 
     std::shared_ptr<spdlog::sinks::basic_file_sink_st> SinkMaker::createFileSink() const {
-        return std::make_shared<spdlog::sinks::basic_file_sink_st>((this->logDirectory_ / this->logFileName_).string());
+        static auto sink = std::make_shared<spdlog::sinks::basic_file_sink_st>((this->logDirectory_ / this->logFileName_).string());
+        return sink;
     }
 
     // ReSharper disable once CppMemberFunctionMayBeStatic
     std::shared_ptr<spdlog::sinks::stdout_color_sink_st> SinkMaker::createConsoleSink() const {
+        static auto sink = std::make_shared<spdlog::sinks::stdout_color_sink_st>();
         return std::make_shared<spdlog::sinks::stdout_color_sink_st>();
     }
 } // TolCat

@@ -39,6 +39,17 @@ int tolCatInitialise(const char *domainName) {
     return retVal;
 }
 
+void (*shutdownOrig)();
+void tolCatShutdown() {
+    TolCat::getLogger()->info("IL2CPP shutting down.");
+    TolCat::getLogger()->info("Shutting down loggers.");
+    TolCat::getLogger()->error("SHUTDOWN");
+    spdlog::shutdown();
+    std::this_thread::sleep_for(std::chrono::nanoseconds(10000000));
+
+    shutdownOrig();
+}
+
 void initLogEnvironment(const TolCatLaunchArgs launchArgs) {
     TolCat::createLogsDir();
 
@@ -52,27 +63,32 @@ void initLogEnvironment(const TolCatLaunchArgs launchArgs) {
 }
 
 void initLogger(std::shared_ptr<spdlog::logger> logger, const TolCatLaunchArgs launchArgs) {
-    const auto sinkMaker = TolCat::SinkMaker(TolCat::getLogsDir());
-    TolCat::getLogger()->sinks().push_back(std::move(sinkMaker.createFileSink()));
+    static const auto sinkMaker = TolCat::SinkMaker(TolCat::getLogsDir());
+    logger->sinks().push_back(std::move(sinkMaker.createFileSink()));
 
     if (hasLaunchArg(launchArgs, TolCatLaunchArgs::kDebugConsole)) {
-        TolCat::getLogger()->sinks().push_back(std::move(sinkMaker.createConsoleSink()));
+        logger->sinks().push_back(std::move(sinkMaker.createConsoleSink()));
     }
+
+    logger->flush_on(spdlog::level::err);
 }
 
 extern "C" [[maybe_unused]] TOLCAT_API void launchTolCat(TolCatLaunchArgs launchArgs) {
     initLogEnvironment(launchArgs);
-    spdlog::info("Initalised log environment.");
+    spdlog::info("Initialised log environment.");
 
     initLogger(TolCat::getLogger(), launchArgs);
     TolCat::getLogger()->info("TolCat logger initialised.");
 
     TolCat::getLogger()->info("Initialising Gluon...");
-
+    initLogger(Gluon::getLogger(), launchArgs);
     Gluon::Il2CppFunctions::initialise();
     TolCat::getLogger()->info("Finished Gluon initialisation!");
 
     // TODO: Check hook was successful
     (void)DobbyHook(reinterpret_cast<void *>(Gluon::Il2CppFunctions::il2cpp_init),
                     reinterpret_cast<void *>(tolCatInitialise), reinterpret_cast<void **>(&initOrig));
+
+    (void)DobbyHook(reinterpret_cast<void *>(Gluon::Il2CppFunctions::il2cpp_shutdown),
+                    reinterpret_cast<void *>(tolCatShutdown), reinterpret_cast<void **>(&shutdownOrig));
 }
