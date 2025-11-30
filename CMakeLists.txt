@@ -19,8 +19,6 @@ if (WIN32)
     set(CMAKE_SHARED_LIBRARY_PREFIX "")
 endif ()
 
-add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/Gluon")
-
 macro (RECURSE_FILES return_list filter)
     file(GLOB_RECURSE new_list ${filter})
     set(file_list "")
@@ -96,6 +94,8 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Dobby)
 set(SPDLOG_BUILD_SHARED ON)
 set(SPDLOG_BUILD_PIC ON)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/spdlog)
+
+add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/Gluon")
 
 # TolCat Target
 add_library(TolCat SHARED)
